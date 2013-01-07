@@ -1,0 +1,22 @@
+Package: TSclust
+Type: Package
+Title: Time series clustering utilities
+Version: 1.0
+Date: 2013-01-07
+Encoding: UTF-8
+Author: Pablo Montero Manso, José Antonio Vilar
+Maintainer: Pablo Montero <pmontm@gmail.com>
+Description: This package contains a set of measures of dissimilarity
+        between time series to perform time series clustering. Metrics
+        based on raw data, on generating models and on the forecast
+        behavior are implemented. Some additional utilities related to
+        time series clustering are also provided, such as clustering
+        algorithms and cluster evaluation metrics.
+License: GPL-2
+Depends: R (>= 2.14.0), nlme,locpol, KernSmooth, dtw, longitudinalData,
+        wmtsa
+Suggests: proxy
+Packaged: 2013-05-28 11:18:18 UTC; pmont
+NeedsCompilation: no
+Repository: CRAN
+Date/Publication: 2013-05-28 13:53:55

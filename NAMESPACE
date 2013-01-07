@@ -1,0 +1,8 @@
+import(nlme)
+import(dtw)
+import(locpol)
+import(KernSmooth)
+import(longitudinalData)
+import(wmtsa)
+
+export(diss.ACF, diss.PACF,  diss.AR.PIC, diss.AR.MAH, diss.PER, diss.INT.PER, diss.SPEC.LLR, diss.SPEC.GLK, diss.SPEC.ISD, diss.AR.LPC.CEPS, diss.CORT, diss.PRED, pvalues.clust, diss.DWT, diss.COR, multidiss.AR.LPC.CEPS, multidiss.AR.PIC, multidiss.PRED, cluster.evaluation)
