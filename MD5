@@ -1,9 +1,10 @@
-de9d2ca918b3d582fbe28a694548df9e *DESCRIPTION
-232c49385e97cc2f552aa50b5819ff8b *NAMESPACE
-6d0db651e25b0a5cce208dee5dc53291 *R/diss.R
-4bb4ee9cdf962fc30db50ffdc64dd014 *R/distpred.R
-b7f8f188d4f825a407abeea68e9ad17f *R/distpred_aux.R
-4330531e31872ef3cb5257b35d042d33 *R/distpred_aux2.R
+437cc254859683e29567eaadc1a5a38f *ChangeLog
+9908bb702b002717e9b5279680304ddc *DESCRIPTION
+a0e9e1742f3761040305efe2a079ae90 *NAMESPACE
+da5170c778269f506449b0011cfcfb4b *R/diss.R
+9f58e8aeec04f3c91f2029b8e8691f3c *R/distpred.R
+c549edb86daaa4b8511784a215d9e9df *R/distpred_aux.R
+21c5d5230ea10ab614a22c104638524f *R/distpred_aux2.R
 06f2f891974a7132c5bd020f47ba3255 *data/electricity.RData
 ef6fc871b690ec9b2139cf4ab5b4f1da *data/interest.rates.RData
 d61cfe0fd917a86067007b783b82517f *data/synthetic.tseries.RData
@@ -21,7 +22,7 @@ cf0fc9b418d73717145e375c1e4909c9 *man/diss.DWT.Rd
 29d733dd43fb55e1a2f0583ca24068b4 *man/diss.PRED.Rd
 e50a87e9a3909328280bdfdcbe3bd5b5 *man/diss.SPEC.GLK.Rd
 07d06517eb60a6fe68632d59b99c37a9 *man/diss.SPEC.ISD.Rd
-8b002cd5f9dbe693c57475a8032551ce *man/diss.SPEC.LLR.Rd
+60ba97eda1d93aae7042aa1e175f8707 *man/diss.SPEC.LLR.Rd
 7a824696e26ae725ffde66c15f4e5eef *man/electricity.Rd
 1eb3523bc7fc7def8fe3eb36056e705e *man/interest.rates.Rd
 88d52178a81c1bbc9f3fe739676cb1b6 *man/pvalues.clust.Rd

@@ -1,4 +1,3 @@
-import(nlme)
 import(dtw)
 import(locpol)
 import(KernSmooth)

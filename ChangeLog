@@ -1,0 +1,10 @@
+1.1
+	* Changed logarithm-based spectral dissimilarity "LS" for nonlogarithm "DLS" (diss.SPEC.LLR).
+	
+	* Corrected pvalues.clust
+	
+	* Increased the robustness of several dissimilarities
+	
+	* Corrected documentation incoherences
+	
+	* Removed unused dependencies
