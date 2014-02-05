@@ -7,11 +7,11 @@
 \description{
 	This dataset features three repetitions of several models of time series.
 }
-\usage{synthetic.tseries}
+\usage{data(synthetic.tseries)}
 
 
 \details{
-The dataset is formed by several repetitions of each of the following models.
+The dataset is a \code{mts} object, formed by several repetitions of each of the following models.
 \tabular{cll}{ 
 M1 \tab AR \tab   \eqn{X_t = 0.6 X_{t-1} + \varepsilon_{t}}  \cr
 M2 \tab Bilinear  \tab  \eqn{X_t = \left( 0.3 -0.2 \varepsilon_{t-1} \right) X_{t-1} + 1.0 +\varepsilon_{t}} \cr
@@ -31,22 +31,21 @@ data(synthetic.tseries)
 #Create the true solution, for this dataset, there are three series of each model
 true_cluster <- c(1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6)
 #test a dissimilarity metric and a cluster algorithm
-intperdist <- proxy::dist( synthetic.tseries, diss.INT.PER) #create the distance matrix
+intperdist <- diss( synthetic.tseries, "INT.PER") #create the distance matrix
 #use hierarchical clustering and divide the tree in 6 clusters
 intperclust <- cutree( hclust(intperdist), 6 ) 
 #use a cluster simmilarity index to rate the solution
 cluster.evaluation( true_cluster, intperclust)
 
 #test another dissimilarity metric and a cluster algorithm
-if (require(proxy)) {
-  acfdist <- proxy::dist( synthetic.tseries, diss.ACF, p=0.05) 
-  acfcluster <- pam( acfdist, 6 )$clustering #use pam clustering to form 6 clusters
-  cluster.evaluation( true_cluster, acfcluster)
+acfdist <- diss( synthetic.tseries, "ACF", p=0.05) 
+acfcluster <- pam( acfdist, 6 )$clustering #use pam clustering to form 6 clusters
+cluster.evaluation( true_cluster, acfcluster)
 \dontrun{
-  #test another dissimilarity metric and a cluster algorithm
-  chernoffdist <- proxy::dist( synthetic.tseries, diss.SPEC.LLR)
-  chernoffclust <- pam( chernoffdist, 6 )$clustering 
-  cluster.evaluation( true_cluster, chernoffclust)
-  }
+#test another dissimilarity metric and a cluster algorithm
+chernoffdist <- diss( synthetic.tseries, "SPEC.LLR")
+chernoffclust <- pam( chernoffdist, 6 )$clustering 
+cluster.evaluation( true_cluster, chernoffclust)
 }
+
 }

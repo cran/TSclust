@@ -23,6 +23,7 @@ diss.SPEC.GLK(x, y, plot=FALSE)
 	\item{plot}{
 		If \code{TRUE}, the smoothed spectral densities of the two series are plotted.	
 }
+
 }
 \details{
 The dissimilarity between two series \code{x} and \code{y} is measured in terms of the vaue of a test statistic to check the equality of their log-spectra, \eqn{m_X(\lambda)} and \eqn{m_Y(\lambda)} respectivelty. The test statistic is constructed by using the generalized likelihood ratio test criterion (Fan and Zhang, 2004). Specifically, the test statistic takes the form:
@@ -30,7 +31,6 @@ The dissimilarity between two series \code{x} and \code{y} is measured in terms 
 
 where \eqn{I_x(\lambda_k)} and \eqn{I_y(\lambda_k)} are the periodograms of \code{x} and \code{y}, \eqn{ Z_k = \log(I_x(\lambda_k)) - \log( I_y(\lambda_k))}, and \eqn{\hat{\mu}(\lambda_k)}{hat\mu(\lambda_k)} is the local maximum log-likelihood estimator of \eqn{\mu(\lambda_k)= m_x(\lambda_k) - m_y(\lambda_k)} computed by local linear fitting.
 
-High computational requirements due to the maximum likelihood estimation.
 
 }
 \value{
@@ -62,12 +62,12 @@ Pablo Montero Manso, José Antonio Vilar.
 ## Create two sample time series
 x <- cumsum(rnorm(50))
 y <- cumsum(rnorm(50))
-z <- sin(seq(0, pi, length.out=100))
+z <- sin(seq(0, pi, length.out=50))
 ## Compute the distance and check for coherent results
 diss.SPEC.GLK(x, y, plot=TRUE)
 #create a dist object for its use with clustering functions like pam or hclust
 \dontrun{
-proxy::dist( rbind(x,y,z), diss.SPEC.GLK )
+diss( rbind(x,y,z), "SPEC.GLK" )
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

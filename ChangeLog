@@ -1,3 +1,42 @@
+1.2
+	* Corrected changes in the documentation of the AR.LPC.CEPS
+	
+	* Added diss wrapper function
+	
+	* Converted electricity and synthetic.tseries dataset to a mts object
+	
+	* Changed the name of the main documentation page
+	
+	* Changed minimum R version required to R (>= 3.0.1)
+
+	* Removed multidiss.* functions, absorbed in the wrapper
+
+    * Added permissive parameter to MAHARAJ, PIC, CEPS
+    
+    * Added SAX dissimilarity, PAA reduction, SAX symbolization
+    
+    * Added CDM and NCD compression based dissimilarities
+    
+    * Changing to a pairwise interface for distances like PRED, AR.PIC, AR.LPC.CEPS
+    
+    * Added CID dissimilarity
+    
+    * Added PDC distance using the pdc package
+    
+    * Added linear interpolation approximation for the spectral bases dissimilarities
+    
+    * Reworked diss.SPEC.* and diss.PRED for storing intermediate results, for a faster pairwise dissimilarity using diss()
+    
+    * Changed pvalues cluster method to correct the problem in the flowchart of the original paper
+    
+    * Increased error checking in all the functions
+    
+    * Added leave-one-out 1NN function loo1nn.cv()
+    
+    * Increased and corrected documentation for all the functions
+    
+    * Added support for lists, dataframes, mts objects
+    
 1.1
 	* Changed logarithm-based spectral dissimilarity "LS" for nonlogarithm "DLS" (diss.SPEC.LLR).
 	

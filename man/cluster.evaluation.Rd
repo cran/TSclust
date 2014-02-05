@@ -53,7 +53,9 @@ This index is not simmetric.
 }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
-
+\seealso{
+ \code{\link[fpc]{cluster.stats}},  \code{\link[clValid]{clValid}}, \code{\link[clv]{std.ext}}
+}
 
 \examples{
 

@@ -71,9 +71,8 @@ diss.PACF(x, y)
 diss.ACF(x, z)
 diss.PACF(y, z)
 #create a dist object for its use with clustering functions like pam or hclust
-if (require(proxy)) {
-  proxy::dist( rbind(x,y,z), diss.ACF, p=0.05)
-}
+diss( rbind(x,y,z), "ACF", p=0.05)
+
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

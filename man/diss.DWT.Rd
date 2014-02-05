@@ -22,7 +22,7 @@ diss.DWT(series)
 
 }
 \details{
-
+This method differs from other dissimilarities in that pairwise dissimilaries depend on the whole dataset that is given to \code{diss.DWT}, hence, there is no pairwise version of the function defined, only accepts whole datasets.
 The set of original series is replaced by their wavelet approximation coefficients in an appropriate scale, and the dissimilarity between two series is computed as the Euclidean distance between these coefficients.  The appropriate scale is automatically determined by using an algorithm addressed to obtain an efficient reduction of the dimensionality but preserving as much information from the original data as possible. The algorithm is introduced by Zhang, Ho, Zhang, and Lin (2006).
  
 %%  ~~ If necessary, more details than the description above ~~
@@ -34,6 +34,9 @@ Returns an object of type \code{dist} with the pairwise distances.
 %%  \item{comp1 }{Description of 'comp1'}
 %%  \item{comp2 }{Description of 'comp2'}
 %% ...
+}
+\seealso{
+\code{\link[wmtsa]{wavDWT}}
 }
 \references{
 Zhang, H., Ho, T. B., Zhang, Y., and Lin, M. (2006) Unsupervised feature extraction for time series clustering using orthogonal wavelet transform. \emph{INFORMATICA-LJUBLJANA-}, \bold{30(3)}, 305.

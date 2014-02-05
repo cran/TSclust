@@ -58,14 +58,11 @@ x <- cumsum(rnorm(100))
 y <- cumsum(rnorm(100))
 z <- sin(seq(0, pi, length.out=100))
 ##
-diss.MAH.pvalue <- function(x,y) {
-	diss.AR.MAH(x,y)$p_value
-}
+
 ## Compute the distance and check for coherent results
-if (require(proxy)) {
-  dd <- proxy::dist( rbind(x,y,z), diss.MAH.pvalue)
-  pvalues.clust( dd, 0.05 )
-}
+dd <- diss( rbind(x,y,z), "AR.MAH")
+pvalues.clust( dd$p_value, 0.05 )
+
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

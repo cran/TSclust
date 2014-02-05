@@ -9,7 +9,7 @@ Computes the dissimilarity between two time series by testing whether both serie
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
 }
 \usage{
-diss.AR.MAH(x, y, dependence=FALSE)
+diss.AR.MAH(x, y, dependence=FALSE, permissive=TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -24,10 +24,14 @@ diss.AR.MAH(x, y, dependence=FALSE)
   \item{dependence}{
   Boolean for considering dependence between observations of the series at the same point in time.
 	}
+  \item{permissive}{
+  Boolean for continuing with the method even if no valid order is selected by AIC.
+  }
 	
 }
 \details{
-Assuming that the time series x and y belong to the class of invertible and stationary ARMA processes, this dissimilarity measure is based on checking the equality of their underlying ARMA models by following the testing procedures proposed by Maharaj (1996,2000). The ARMA structures are approximated by truncated AR(\eqn{\infty}) models with a common order \eqn{k = \max{(k_x, k_y)}}, where \eqn{k_x} and \eqn{k_y} are determined by the AIC criterion. The AR coefficients are automatically fitted. The dissimilarity can be evaluated by using the value of the test statistic or alternatively the associated p-value. If dependence=FALSE, the dissimilarity measure is constructed by following the procedure introduced by Maharaj (1996), which is designed to compare independent time series. Otherwise, a more general testing procedure is used (Maharaj, 2000), which assumes that both models are correlated at the same time points but uncorrelated across observations (Maharaj, 2000).
+Assuming that the time series x and y belong to the class of invertible and stationary ARMA processes, this dissimilarity measure is based on checking the equality of their underlying ARMA models by following the testing procedures proposed by Maharaj (1996,2000). The ARMA structures are approximated by truncated AR(\eqn{\infty}) models with a common order \eqn{k = \max{(k_x, k_y)}}, where \eqn{k_x} and \eqn{k_y} are determined by the AIC criterion. The AR coefficients are automatically fitted. The dissimilarity can be evaluated by using the value of the test statistic or alternatively the associated p-value. If \code{dependence} is \code{FALSE}, the dissimilarity measure is constructed by following the procedure introduced by Maharaj (1996), which is designed to compare independent time series. Otherwise, a more general testing procedure is used (Maharaj, 2000), which assumes that both models are correlated at the same time points but uncorrelated across observations (Maharaj, 2000).
+When \code{permissive} argument is \code{TRUE}, if the automatic fitting of the AR order fails, the method shows a warning and then forces an AR of order 1. If \code{permissive} is \code{FALSE} the method produces an error if no AR order is found by AIC.
 
 }
 \value{
@@ -65,14 +69,10 @@ z <- arima.sim(model=list(ar=c(0.5, 0.2)), n =100, n.start=100)
 diss.AR.MAH(x, y)
 diss.AR.MAH(x, z)
 diss.AR.MAH(y, z)
-#create a function that returns only the statitic 
-dissimilarity.MAH.STAT <- function(x,y) {
-	diss.AR.MAH(x,y, dependence=TRUE)$statistic
-}
+
 #create a dist object for its use with clustering functions like pam or hclust
-if (require(proxy)) {
-   proxy::dist( rbind(x,y,z), dissimilarity.MAH.STAT)
-}
+diss( rbind(x,y,z), "AR.MAH")$statistic
+
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

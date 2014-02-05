@@ -9,7 +9,7 @@ Computes the dissimilarity between two time series in terms of the integrated sq
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
 }
 \usage{
-diss.SPEC.ISD(x, y, plot=FALSE)
+diss.SPEC.ISD(x, y, plot=FALSE, n=length(x))
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -24,12 +24,16 @@ diss.SPEC.ISD(x, y, plot=FALSE)
 	\item{plot}{
 		If \code{TRUE}, plot the smoothed spectral densities of the two series.
 }
+\item{n}{
+	The number of points to use for the linear interpolation. A value of n=0 uses numerical integration instead of linear interpolation. See details.
+}
 }
 \details{
 
 \deqn{ d(x,y) = \int ( \hat{m}_x(\lambda) - \hat{m}_y(\lambda))^2 \, d\lambda, }{ d(x,y) = INT( (m_x(\lambda) - m_y(\lambda))^2 )d\lambda }
 where \eqn{ \hat{m}_x(\lambda) }{m_x(\lambda)} and \eqn{ \hat{m}_y(\lambda) }{m_y(\lambda)} are local linear smoothers of the log-periodograms, obtained using the maximum local likelihood criterion.
-%%  ~~ If necessary, more details than the description above ~~
+
+By default, for performance reasons, the spectral densities are estimated using linear interpolation using \code{n} points. If \code{n} is 0, no linear interpolation is performed, and \code{integrate} is used to calculate the integral, using as many points as \code{integrate} sees fit.
 }
 \value{
 The computed distance.
@@ -57,12 +61,13 @@ Pablo Montero Manso, José Antonio Vilar.
 ## Create two sample time series
 x <- cumsum(rnorm(50))
 y <- cumsum(rnorm(50))
-z <- sin(seq(0, pi, length.out=100))
+z <- sin(seq(0, pi, length.out=50))
 ## Compute the distance and check for coherent results
-diss.SPEC.ISD(x, y, plot=TRUE)
+diss.SPEC.ISD(x, y, plot=TRUE) 
 #create a dist object for its use with clustering functions like pam or hclust
 \dontrun{
-proxy::dist( rbind(x,y,z), diss.SPEC.ISD )
+diss.SPEC.ISD(x, y, plot=TRUE, n=0)#try integrate instead of interpolation
+diss( rbind(x,y,z), "SPEC.ISD" )
 }
 
 }

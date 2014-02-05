@@ -54,7 +54,7 @@ Pablo Montero Manso, José Antonio Vilar.
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-\code{\link{diss.PACF}}, \code{\link{diss.ACF}} 
+\code{\link{diss.PACF}}, \code{\link{diss.ACF}}, \code{\link{diss}}
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
@@ -67,7 +67,7 @@ diss.COR(x, y)
 diss.COR(x, z)
 #create a dist object for its use with clustering functions like pam or hclust
 \dontrun{
-proxy::dist( rbind(x,y,z), diss.COR)
+diss( rbind(x,y,z), "COR")
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

@@ -67,9 +67,7 @@ diss.PER(x, y, TRUE, TRUE)
 diss.PER(x, z, TRUE, TRUE)
 diss.PER(y, z, TRUE, TRUE)
 #create a dist object for its use with clustering functions like pam or hclust
-if (require(proxy)) {
-	proxy::dist( rbind(x,y,z), diss.PER, logarithm=TRUE, normalize=TRUE)
-}
+diss( rbind(x,y,z), "PER", logarithm=TRUE, normalize=TRUE)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

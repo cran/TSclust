@@ -9,7 +9,7 @@ Computes a general dissimilarity measure based on the ratio of local linear spec
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
 }
 \usage{
-diss.SPEC.LLR(x, y, alpha=0.5, method="DLS", plot=FALSE)
+diss.SPEC.LLR(x, y, alpha=0.5, method="DLS", plot=FALSE, n=length(x))
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -30,6 +30,10 @@ diss.SPEC.LLR(x, y, alpha=0.5, method="DLS", plot=FALSE)
 		if \code{TRUE}, plot the smoothed spectral densities of the two series.	
 }
 
+\item{n}{
+	The number of points to use for the linear interpolation. A value of n=0 uses numerical integration instead of linear interpolation. See details.
+}
+
 }
 \details{
 \deqn{ d_W = \int_{-\pi}^{\pi} W^{\prime}\Bigg( \frac{f_x(\lambda) } { f_y(\lambda) } \Bigg) d\lambda }{d_W = INT( W^\prime( f_x(\lambda) / f_y(\lambda) ) )d\lambda | \lambda=-\pi to \pi}
@@ -39,6 +43,9 @@ where:
     \item \eqn{W^{\prime}(x) = W(x) + W(1/x)} with \eqn{W(x) = \log( \alpha x + (1- \alpha) x) - \alpha \log(x)}, so that \eqn{W(.)} is a divergence function depending on \eqn{\alpha}. 
 }
 This dissimilarity measure corresponds to the limiting spectral approximation of the Chernoff information measure in the time domain (see Kakizawa et al., 1998). The spectral densities are approximated by using local linear fitting by generalized least squared if \code{method=”DLS”} or by maximum likelihood if \code{method=”LK”} (in this case, higher computational cost is required).
+
+By default, for performance reasons, the spectral densities are estimated using linear interpolation using \code{n} points. If \code{n} is 0, no linear interpolation is performed, and \code{integrate} is used to calculate the integral, using as many points as \code{integrate} sees fit.
+ If the dissimilarity will be calculated for more than two series, calling SPEC.LLR from the \code{diss} wrapper function is preferred, since it saves some computations.
 
 }
 \value{
@@ -65,7 +72,7 @@ Pablo Montero Manso, José Antonio Vilar.
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-\code{\link{diss.SPEC.GLK}, \link{diss.SPEC.ISD}}
+\code{\link{diss.SPEC.GLK}}, \code{\link{diss.SPEC.ISD}}, \code{\link{integrate}}
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
@@ -75,12 +82,11 @@ y <- cumsum(rnorm(50))
 z <- sin(seq(0, pi, length.out=50))
 ## Compute the distance and check for coherent results
 diss.SPEC.LLR(x, y, plot=TRUE)
-diss.SPEC.LLR(x, z)
-diss.SPEC.LLR(y, z)
+diss.SPEC.LLR(x, z, n=0) #try integrate instead of interpolation
+diss.SPEC.LLR(y, z, method="LK", n=0) #maximum likelihood with integration
 #create a dist object for its use with clustering functions like pam or hclust
-\dontrun{
-proxy::dist( rbind(x,y,z), method=diss.SPEC.LLR, meth="LK")
-}
+diss(rbind(x,y,z), METHOD="SPEC.LLR", method="DLS", alpha=0.5, n=50)
+
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

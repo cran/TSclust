@@ -7,7 +7,7 @@
 \description{
   Partial realizations of time series of hourly electricity prices (Cent/kWh) in the Spanish market.
 }
-\usage{electricity}
+\usage{data(electricity)}
 \format{
   A matrix with 365 observations of the hourly electricity cost readings.
   

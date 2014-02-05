@@ -3,6 +3,44 @@
 #######################  AUTOCORRELATION AND PARTIAL ###########################
 ################################################################################
 
+z.normalize = function(x) {
+    (x - mean(x)) / sd(x)
+}
+
+range.normalize = function(x) {
+    minim = min(x)
+    maxim = max(x)
+    (x -minim) / (maxim - minim)    
+}
+
+.common.ts.sanity.check <- function(x) {
+    if (missing(x)) {
+        stop("At least one series is missing!")
+    }
+    if (any(is.na(x))) {
+        stop("NA in the series")
+    }
+    if (!is.numeric(x)) {
+        stop("Series must be numeric")
+    }
+    #check length
+    if (length(x) < 2) {
+        stop("Incorrect length of the series")
+    }
+    if (!is.null(dim(x))) {
+        stop("Incorrect dimension of the series, please input univarate series")
+    }
+}
+.ts.freq.check <- function(x, y) {
+    if (is.ts(x) && is.ts(y)) { #check their frequencies
+        cbind(x,y)
+    }
+}
+.ts.sanity.check <- function(x,y) {
+    .common.ts.sanity.check(x)
+    .common.ts.sanity.check(y)  
+    .ts.freq.check(x,y)
+}
 
 #check if series have equal length, a requisite of some functions
 .check.equal.length.ts <- function(x,y) {
@@ -13,7 +51,10 @@
 }
 
 #weighted distance of acf and pacf coefficients
-.internal.autocorr.dist <- function( rhox, rhoy, p=NULL, omega=NULL ) {
+.internal.autocorr.dist <- function(rhox, rhoy, p=NULL, omega=NULL) {
+    if ( length(rhox) != length(rhoy) ) {#check compatible coefficient vectors
+        stop("The amount of autocorrelation coefficients must be the same, maybe lag.max greater than the length of one of the series")
+    }
     if (is.null(omega)) { #if there is no weighting matrix
         if (!is.null(p)) { #check if there is gemoetrical decay parameter
             omega <- diag(p*(1-p)**(1:length(rhox)))
@@ -26,7 +67,8 @@
 }
 
 
-diss.ACF <- function( x, y ,  p = NULL,  omega=NULL, lag.max = 50  ) {
+diss.ACF <- function(x, y ,  p=NULL,  omega=NULL, lag.max=50) {
+    .ts.sanity.check(x, y)
     rhox <- acf(x, lag.max=lag.max, plot=FALSE)$acf[-1]
     rhoy <- acf(y, lag.max=lag.max, plot=FALSE)$acf[-1]
     .internal.autocorr.dist( rhox, rhoy, p, omega)
@@ -35,79 +77,73 @@ diss.ACF <- function( x, y ,  p = NULL,  omega=NULL, lag.max = 50  ) {
 
 
 diss.PACF <- function(x, y, p = NULL, omega=NULL, lag.max=50) {
-    rhox <- as.vector(pacf(x, plot=FALSE)$acf)
-    rhoy <- as.vector(pacf(y, plot=FALSE)$acf)
+    .ts.sanity.check(x, y)
+    rhox <- as.vector(pacf(x, lag.max=lag.max, plot=FALSE)$acf)
+    rhoy <- as.vector(pacf(y, lag.max=lag.max, plot=FALSE)$acf)
     .internal.autocorr.dist( rhox, rhoy, p, omega)
 }
+
+
+
+
 
 #######################################################
 ##########  distance Piccolo  #########################
 #######################################################
 
-diss.AR.PIC <- function(x, y, order=NULL) {
-    order.x <- NULL
-    order.y <- NULL
-    if (is.null(order)) { #order for the ARIMA modeling
-        order <- rbind( c(NA,NA,NA), c(NA,NA,NA))
+
+#try to find the ar coefficients of a AR series, if no order found, try forcing
+find_ar_model_force = function(x, permissive) {
+    arx <- ar(x) #first, try to find automatically
+    if (arx$order < 1) { #if no order found, try forcing order 1
+        if (permissive) {
+            arx <- ar(x, aic=FALSE, order.max = 1)
+        }
+        if (arx$order < 1) stop("Could not find a valid AR order for the series")
     }
-    if (!sum( is.na(order[1,]))) {
-        order.x <- order[1,]
-    }
-    if (!sum( is.na(order[2,]))) {
-        order.x <- order[2,]
-    }
-    
+    arx
+}
+
+
+#######################################
+
+diss.AR.PIC <- function(x, y, order.x=NULL, order.y=NULL, permissive=TRUE) {
+    .ts.sanity.check(x, y)
+    #if order NULL use ar AIC, else use arima fitting of the given order
     PIx <- NULL
     if (is.null(order.x)) { #no ARIMA order, use AR
-        PIx <- ar(x)$ar
+        PIx <- find_ar_model_force(x, permissive)$ar
     } else { 
         if ((order.x[1]) < 1) stop("The arima order must have AR coefficients, they are used for the distance")
         arim <- arima(x, order.x)
         PIx <- arim$coef[1:order.x[1]] #get the AR coeff off the arima model
     }
+    
     PIy <- NULL
     if (is.null(order.y)) { #no ARIMA order, use AR
-        PIy <- ar(y)$ar
+        PIy <- find_ar_model_force(y, permissive)$ar
     } else {
         if ((order.y[1]) < 1) stop("The arima order must have AR coefficients, they are used for the distance")
         arim <- arima(y, order.y)
         PIy <- arim$coef[1:order.y[1]] #get the AR coeff off the arima model
     }
+    
     k <- max(c(length(PIx), length(PIy))) #get the maximun order
-    if (k < 1) { #if no AR model found, impose an AR(1) model
-        warning("Error in automatic selection of AR order, 0 selected by AIC, forcing 1")
-        ARx <- ar(x, aic=FALSE, order.max = 1)
-        ARy <- ar(y, aic=FALSE, order.max = 1)
-        PIx <- ARx$ar
-        PIy <- ARy$ar
-        k <- min(c(length(PIx), length(PIy)))
-        if (k < 1) stop("Could not find any AR coefficients")
+    if (k < 1) {
+       stop("Could not find any AR coefficients")
     }
-    PRIMAx <- rep(0,k) #fill with zeroes to the greates AR order between series x and y (k)
+    
+    PRIMAx <- rep(0,k) #fill with zeroes to the greatest AR order between series x and y (k)
     if (length(PIx) > 0) {
         PRIMAx[1:length(PIx)] <- PIx
     }
+    
     PRIMAy <- rep(0,k)
     if (length(PIy) > 0) {
         PRIMAy[1:length(PIy)] <- PIy
     }
-    as.numeric( dist(rbind(PRIMAx,PRIMAy)) ) #compute the euclidean distance between the zero padded AR coefficients
-}
-
-
-#prototyping multiple parameter per series distance
-multidiss.AR.PIC <- function( series, order=NULL) {
-    distances <- matrix(0, nrow(series), nrow(series))
-    rownames(distances) <- rownames(series)
     
-    for ( i in 1: (nrow(series)-1) ) {
-        for (j in (i+1):nrow(series) ) {
-            distance <- diss.AR.PIC(series[ i,], series[j,], rbind(order[i,], order[j,]) )
-            distances[ i, j] <- distance
-            distances[ j, i] <- distance
-        }
-    }
-    as.dist((distances))
+    as.numeric( dist(rbind(PRIMAx,PRIMAy)) ) #compute the euclidean distance between the zero padded AR coefficients
 }
 
 
@@ -157,7 +193,7 @@ distance.MAH.EXT <- function( x, y, k) {
     Iden
     V <- kronecker(Epsil, Iden  )
     IV <- solve(V)
-    tryCatch( {
+    tryCatch( { #these operations can go wrong, it they fail, try a smaller order
         PI <- solve(t(bigW) %*% IV %*% bigW) %*% t(bigW) %*% IV %*% c(MX$X, MY$X)
         R <- cbind( diag(1, k), diag(-1,k) )
         result <- list()
@@ -167,27 +203,13 @@ distance.MAH.EXT <- function( x, y, k) {
     }, error = function(e) { if (k>1) {
         distance.MAH.EXT(x,y,k-1)
     }
-                             else { stop("Could not find valid AR order")}
+      else { stop("Could not find valid AR order")}
     })
 }
 
 
 
-distance.MAH.SIMP = function( x, y ) {
-    ARx <- ar(x)
-    ARy <- ar(y)
-    PIx <- ARx$ar
-    PIy <- ARy$ar
-    k <- max(c(length(PIx), length(PIy)))
-    if (k < 1) {
-        warning("Error in automatic selection of AR order, 0 selected by AIC, forcing 1")
-        ARx <- ar(x, aic=FALSE, order.max = 1)
-        ARy <- ar(y, aic=FALSE, order.max = 1)
-        PIx <- ARx$ar
-        PIy <- ARy$ar
-        k <- min(c(length(PIx), length(PIy)))
-        if (k < 1) stop("Could not find any AR coefficient")
-    }
+distance.MAH.SIMP = function( x, y, PIx, PIy, var.pred.x, var.pred.y, k, permissive=TRUE ) {
     PRIMAx <- rep(0,k)   #fill with zeroes
     if (length(PIx) > 0) {
         PRIMAx[1:length(PIx)] <- PIx
@@ -206,7 +228,7 @@ distance.MAH.SIMP = function( x, y ) {
         Rx[i,] <- covx[ indices[1:length(covx)]]
         Ry[i,] <- covy[ indices[1:length(covx)]]
     }
-    V <- (solve(solve(Rx)*(ARx$var.pred) + solve(Ry)*(ARy$var.pred)))
+    V <- (solve(solve(Rx)*(var.pred.x) + solve(Ry)*(var.pred.y)))
     dif <- (PRIMAx - PRIMAy)
     
     D <- sqrt(length(x)) * ( dif %*% V %*% dif)
@@ -215,29 +237,22 @@ distance.MAH.SIMP = function( x, y ) {
 }
 
 
-diss.AR.MAH = function( x, y, dependence = FALSE ) {
-    .check.equal.length.ts(x,y)
-    ARx <- ar(x)
-    ARy <- ar(y)
-    PIx <- ARx$ar
-    PIy <- ARy$ar
-    k <- max(c(length(PIx), length(PIy)))
-    if (k < 1) { #calculate the greater AR order found, if order 0 found, impose order 1
-        warning("Error in automatic selection of AR order, 0 selected by AIC, forcing 1")
-        ARx <- ar(x, aic=FALSE, order.max = 1)
-        ARy <- ar(y, aic=FALSE, order.max = 1)
-        PIx <- ARx$ar
-        PIy <- ARy$ar
-        k <- min(c(length(PIx), length(PIy)))
-        if (k < 1) stop("Could not find any AR coefficient")
+diss.AR.MAH = function( x, y, dependence = FALSE, permissive = TRUE) {
+    .ts.sanity.check(x, y)
+    arx <- find_ar_model_force(x, permissive)
+    ary <- find_ar_model_force(y, permissive)
+    k <- max(c(length(arx$ar), length(ary$ar)))
+    if (k < 1) {
+        if (k < 1) stop("Could not find a valid AR order for the series")
     }
+
     if (dependence) {
+        .check.equal.length.ts(x,y)
         distance.MAH.EXT(x, y, k)
     }
     else {
-        distance.MAH.SIMP(x,y)
+        distance.MAH.SIMP(x, y, arx$ar, ary$ar, arx$var.pred, ary$var.pred, k, permissive)
     }
-    
 }
 
 ######################################################
@@ -245,6 +260,7 @@ diss.AR.MAH = function( x, y, dependence = FALSE ) {
 ######################################################
 
 diss.PER <- function(x,y, logarithm=FALSE, normalize=FALSE) {
+    .ts.sanity.check(x, y)
     .check.equal.length.ts(x,y)
     Ix <- spec.pgram(x, plot=F)$spec
     Iy <- spec.pgram(y, plot=F)$spec
@@ -261,6 +277,8 @@ diss.PER <- function(x,y, logarithm=FALSE, normalize=FALSE) {
 
 
 diss.INT.PER <- function(x,y, normalize=TRUE) {
+    .ts.sanity.check(x, y)
+    .check.equal.length.ts(x,y)
     Ix <- spec.pgram(x, plot=F)
     Iy <- spec.pgram(y, plot=F)
     Cx <- 1
@@ -321,19 +339,21 @@ simetricDivergenceW <- function(x,alpha) {
 }
 
 #plot the soothed spectral density
-plotsmoothspec <- function ( lambdasX, YksX, lambdasY, YksY, myf, hX, hY , method="Maximum Likelihood") {
-    
-    baseX <- seq(min(lambdasX) + 0.001, max(lambdasX) - 0.001, length.out=min(500, 3*length(lambdasX)) )
+plotsmoothspec <- function ( lambdasX, YksX, lambdasY, YksY, myf, hX, hY, n, method="Maximum Likelihood") {
+    if ( n < 1) {
+        n <- 500
+    }
+    baseX <- seq(min(lambdasX) + 0.001, max(lambdasX) - 0.001, length.out=min(500,n) )
     specX <- NULL
     if (pmatch(method , c("Maximum Likelihood", "Least Squares")) == 2) {
-        specX <- (myf(YksX, lambdasX,  baseX, hX))
+        specX <- (myf(YksX, lambdasX,  hX, baseX))
     } else {
         specX <- exp(myf(baseX, YksX, lambdasX, hX))
     }
-    baseY <- seq(min(lambdasY)+ 0.001, max(lambdasY)- 0.001, length.out=min(500, 3*length(lambdasY)) )
+    baseY <- seq(min(lambdasY)+ 0.001, max(lambdasY)- 0.001, length.out=min(500, n) )
     specY <- NULL
     if (pmatch(method , c("Maximum Likelihood", "Least Squares")) == 2) {
-        specY <- (myf(YksY,lambdasY, baseY, hY))
+        specY <- (myf(YksY,lambdasY, hY, baseY))
     } else {
         specY <- exp(myf(baseY, YksY, lambdasY, hY))
     }
@@ -345,122 +365,237 @@ plotsmoothspec <- function ( lambdasX, YksX, lambdasY, YksY, myf, hX, hY , metho
     
 }
 
+.vectorized.lk.optim <- Vectorize(likelihood.optim,"lambda")  #needed for likelihood.optim to accept a vector, required for integrate
 
-distance.W.LK <- function(x,y, alpha, plot=FALSE) {
-    myf <- Vectorize(likelihood.optim,"lambda") #needed for likelihood.optim to accept a vector, required for integrate
+
+#trapezoind integration, taken from another package
+trapez <- function(x,y) {
+    idx = 2:length(x)
+    return (as.double( (x[idx] - x[idx-1]) %*% (y[idx] + y[idx-1])) / 2)
+}
+
+interp.SPEC.LOGLIKELIHOOD <- function(x, n) {
+    pgram <- spec.pgram(x, plot=FALSE)
+    Yks <- log(pgram$spec)
+    lambdas <- pgram$freq
+    interplambdas <- seq(min(lambdas), max(lambdas), length.out=n)
+    hX <- 0.93*dpill(lambdas, Yks)
+    approx( interplambdas, .vectorized.lk.optim( interplambdas, Yks, lambdas, hX ) )
+}
+
+interp.W.LK <- function(x, n) {
+    interps <- interp.SPEC.LOGLIKELIHOOD(x, n)
+    interps$y <- exp(interps$y)
+    interps
+}
+
+integrate.divergenceW <- function(base, x, y, alpha ) {
+    val <- simetricDivergenceW( x / y, alpha)
+    trapez(base, val)
+}
+
+leastsquares.spec <- function( Yk, lambdas, h, lambdaeval) {
+    d <- data.frame(Yk)
+    d$lambdas <- lambdas
+    lp <- locpol(Yk~lambdas, d, bw=h,kernel=gaussK, xeval=lambdaeval )
+    ord <- order(lambdaeval) #trick to get the original order of the lambas, locpol sorts the input vector
+    ord2 <- order(ord)   #second part of the trick
+    lp$lpFit$Yk[ord2]
+}
+
+interp.SPEC.LS <- function(x, n)  {
+    pgram <- spec.pgram(x, plot=FALSE)
+    Yk <- pgram$spec
+    lambdas <- pgram$freq
+    h <- dpill(lambdas, Yk)
+    interplambdas <- seq(min(lambdas), max(lambdas), length.out=n)
+    ys <- leastsquares.spec(Yk, lambdas, h, interplambdas)
+    ys[ys<0.0001] <- 0.0001 #no zeroes allowed
+    list( x = interplambdas, y = ys)
+}
+
+integrate.ISD <- function(base, x, y) {
+    trapez(base, (x - y)^2)
+}
+
+interp.SPEC.GLK <- function(x, n) {
+    pgram <- spec.pgram(x, plot=FALSE)
+    Yk <- log(pgram$spec)
+    lambdas <- pgram$freq
+    h <- 0.93*dpill(lambdas, Yk)
+    ys <- .vectorized.lk.optim( lambdas, Yk, lambdas, h )
+    list( x = lambdas, y = list(mu = ys, Z = Yk) )
+}
+
+integrate.GLK <- function( base, x, y) {
+    Z <- x$Z - y$Z
+    mu <- x$mu - y$mu
+    sum(Z - mu - 2*log(1 + exp(Z - mu))) - sum( Z - 2*log(1 + exp(Z)))
+}
+#generic linear interpolation approximation of the spectral dissimilarities
+#interpfun is a function to calculate the spectrum aproximation
+#n the size of the grid for interpolation
+#intergrationfun is calculates the sum/integration of the diferences
+multidiss.interp.SPEC <- function( series, n, interpfun, integrationfun, ...) {
+    l <- length(series)
+    dists <- matrix(0, l, l)
+    #get the interpolated values
+    interps <- lapply(series, interpfun, n)
+    base <- interps[[1]]$x
+    ##calc the function with the interpolated values
+    for (i in 1:(l-1)) {
+        for (j in (i+1):l) {
+            d <- integrationfun( base, interps[[i]]$y , interps[[j]]$y, ...)
+            dists[i,j] <- d
+            dists[j,i] <- d
+        }
+    }
+    as.dist(dists)
+}
+
+distance.W.LK <- function(x,y, alpha, plot=FALSE, n=length(x)) {
     
-    YksX <- log(spec.pgram(x,plot=FALSE)$spec)
-    lambdasX <- spec.pgram(x,plot=FALSE)$freq
-    YksY <- log(spec.pgram(y,plot=FALSE)$spec)
-    lambdasY <- (spec.pgram(y,plot=FALSE)$freq)
+    
+    
+    pgx <- spec.pgram(x,plot=FALSE)
+    YksX <- log(pgx$spec)
+    lambdasX <- pgx$freq
+    pgy <- spec.pgram(y,plot=FALSE)
+    YksY <- log(pgy$spec)
+    lambdasY <- (pgy$freq)
     
     hX <- 0.93*dpill(lambdasX, YksX)
     hY <- 0.93*dpill(lambdasY, YksY)
     
     integrateaux <- function( lambda ) {
-        xx <- exp(myf(lambda, YksX, lambdasX, hX))
-        yy <- exp(myf(lambda, YksY, lambdasY, hY))
+        xx <- exp(.vectorized.lk.optim(lambda, YksX, lambdasX, hX))
+        yy <- exp(.vectorized.lk.optim(lambda, YksY, lambdasY, hY))
         simetricDivergenceW(  xx / yy, alpha)
     }
     
-    tryCatch( {
-        a <- integrate(integrateaux, min(lambdasX), max(lambdasX))
-    }, error = function (e) {
-        warning("Failed approximation with window from plug.in method, increasing window...")
-        hX <- 2*hX
-        hY <- 2*hY
-        a <- integrate(integrateaux, min(lambdasX), max(lambdasX))
-    })
-    
-    if (plot) {
-        plotsmoothspec(lambdasX, YksX, lambdasY, YksY, myf, hX, hY)
+    a <- 0
+    if (n > 0) {
+        a <- multidiss.interp.SPEC(list(x,y), n, interp.W.LK, integrate.divergenceW, alpha)
+    } else {
+        tryCatch( {
+            a <- integrate(integrateaux, min(lambdasX), max(lambdasX))$value
+        }, error = function (e) {
+            warning("Failed approximation with window from plug.in method, increasing window...")
+            hX <- 2*hX
+            hY <- 2*hY
+            a <- integrate(integrateaux, min(lambdasX), max(lambdasX))$value
+        })
     }
-    
-    a$value
+    if (plot) {
+        plotsmoothspec(lambdasX, YksX, lambdasY, YksY, .vectorized.lk.optim, hX, hY, n)
+    }
+    a
 }
 
-
-distance.W.DLS <- function(x, y, alpha, plot=FALSE) {
-    
+distance.W.DLS <- function(x, y, alpha, plot=FALSE, n=length(x)) {
+     
     YksX <- (spec.pgram(x,plot=FALSE)$spec)
     lambdasX <- spec.pgram(x,plot=FALSE)$freq
     YksY <- (spec.pgram(y,plot=FALSE)$spec)
     lambdasY <- (spec.pgram(y,plot=FALSE)$freq)
     hX <- dpill(lambdasX, YksX)
     hY <- dpill(lambdasY, YksY)
-    myf <- function(Yk, lambdas, lambda, h) {
-        d <- data.frame( Yk)
-        d$lambdas <- lambdas
-        lp <- locpol(Yk~lambdas, d, bw=h,kernel=gaussK, xeval=lambda )
-        ord <- order(lambda) #trick to get the original order of the lambas, locpol sorts the input vector
-        ord2 <- order(ord)   #second part of the trick
-        lp$lpFit$Yk[ord2]
-    }
     
     integrateaux <- function( lambda ) {
-        xx <- (myf(YksX, lambdasX, lambda, hX))
-        yy <- (myf(YksY, lambdasY, lambda, hY))
+        xx <- leastsquares.spec(YksX, lambdasX, hX, lambda )
+        yy <- leastsquares.spec(YksY, lambdasY, hY, lambda )
         xx[xx<0.0001] <- 0.0001
         yy[yy<0.0001] <- 0.0001
         simetricDivergenceW(  xx / yy, alpha)
     }
     lambdas <- spec.pgram(x, plot=F)$freq
-    a <- integrate(integrateaux, min(lambdas), max(lambdas), subdivisions=100)
+    
+    a <- 0
+    if (n > 0) {
+        a <- multidiss.interp.SPEC(list(x,y), n, interp.SPEC.LS, integrate.divergenceW, alpha)
+    } else {
+        a <- integrate(integrateaux, min(lambdas), max(lambdas), subdivisions=100)$value
+    }
     if (plot) {
-        plotsmoothspec(lambdasX, YksX, lambdasY, YksY, myf, hX, hY, "Least Squares")
+        plotsmoothspec(lambdasX, YksX, lambdasY, YksY, leastsquares.spec, hX, hY, n, "Least Squares")
     }
     
-    a$value
+    a
 }
 
 
-diss.SPEC.LLR <- function(x,y, alpha=0.5, method="DLS", plot=FALSE) {
+diss.SPEC.LLR <- function(x,y, alpha=0.5, method="DLS", plot=FALSE, n=length(x)) {
+    .ts.sanity.check(x, y)
     .check.equal.length.ts(x,y)
-    typedist = 0
+    typedist <- 0
     type <-  (pmatch(method, c("DLS", "LK" )))
     if (is.na(type)) {
         stop(paste("Unknown method", method))
     } else if (type == 1) {
-        typedist <- distance.W.DLS(x,y, alpha, plot)
+        typedist <- distance.W.DLS(x,y, alpha, plot, n)
     }
     else if (type == 2) {
-        typedist <- distance.W.LK(x,y, alpha, plot)
+        typedist <- distance.W.LK(x,y, alpha, plot, n)
     }
     typedist
 }
 
+multidiss.SPEC.LLR <- function(series, method="DLS", alpha=0.5, plot=FALSE, n=length(series[[1]])) {
+    if ( n > 0) {
+        interpfun <- NULL
+        type <-  (pmatch(method, c("DLS", "LK" )))
+        if (is.na(type)) {
+            stop(paste("Unknown method", method))
+        } else if (type == 1) {
+            interpfun <- interp.SPEC.LS
+        }
+        else if (type == 2) {
+            interpfun <- interp.W.LK
+        }
+        multidiss.interp.SPEC(series, n, interpfun, integrate.divergenceW, alpha)
+    } else {
+        pairwise.diss( series, noindicesdiss(diss.SPEC.LLR), alpha, method, plot, n)
+    }
+}
+multidiss.SPEC.GLK <- function(series, plot=FALSE) {
+        multidiss.interp.SPEC(series, floor(length(series[[1]])/2), interp.SPEC.GLK, integrate.GLK)
+}
+multidiss.SPEC.ISD<- function(series, plot=FALSE,  n=length(series[[1]])) {
+    if (n > 0) {
+        multidiss.interp.SPEC(series, n, interp.SPEC.LOGLIKELIHOOD , integrate.ISD)
+    } else {
+        pairwise.diss( series, noindicesdiss(diss.SPEC.ISD), plot, n)
+    }
+}
 
-
-diss.SPEC.GLK <- function(x,y, plot=FALSE) {
+    
+diss.SPEC.GLK <- function(x,y, plot=FALSE ) {
+    .ts.sanity.check(x, y)
     .check.equal.length.ts(x,y)
-    myf <- Vectorize(likelihood.optim,"lambda") #needed for likelihood.optim to accept a vector, required for integrate
-    
-    YksX <- log(spec.pgram(x,plot=FALSE)$spec)
-    lambdasX <- spec.pgram(x,plot=FALSE)$freq
-    YksY <- log(spec.pgram(y,plot=FALSE)$spec)
-    lambdasY <- (spec.pgram(y,plot=FALSE)$freq)
-    
-    hX <- 0.93*dpill(lambdasX, YksX)
-    hY <- 0.93*dpill(lambdasY, YksY)
-    
-    Z <- YksX - YksY
-    mx <- myf(lambdasX, YksX, lambdasX, hX )
-    my <- myf(lambdasY, YksY, lambdasY, hY )
-    mu <- mx- my
+        
+    interpx <- interp.SPEC.GLK(x, length(x)/2) #the value n is ignored noly used for compatibility with
+    interpy <- interp.SPEC.GLK(x, length(x)/2) #multidiss.SPEC
     
     if (plot) {
-        plotsmoothspec(lambdasX, YksX, lambdasY, YksY, myf, hX, hY)
+        YksX <- log(spec.pgram(x,plot=FALSE)$spec)
+        lambdasX <- spec.pgram(x,plot=FALSE)$freq
+        YksY <- log(spec.pgram(y,plot=FALSE)$spec)
+        lambdasY <- (spec.pgram(y,plot=FALSE)$freq)
+        hX <- 0.93*dpill(lambdasX, YksX)
+        hY <- 0.93*dpill(lambdasY, YksY)
+        plotsmoothspec(lambdasX, YksX, lambdasY, YksY, .vectorized.lk.optim, hX, hY, length(x)/2)
     }
     #distance GLK
-    sum(Z - mu - 2*log(1 + exp(Z - mu))) - sum( Z - 2*log(1 + exp(Z)))
+    integrate.GLK( interpx$x, interpx$y, interpy$y)
 }
 
 
 
 #distancia ISD
-diss.SPEC.ISD <- function(x,y, plot=FALSE) {
+diss.SPEC.ISD <- function(x,y, plot=FALSE, n=length(x)) {
+    .ts.sanity.check(x, y)
     .check.equal.length.ts(x,y)
-    myf <- Vectorize(likelihood.optim,"lambda") #needed for likelihood.optim to accept a vector, required for integrate
+ 
     
     YksX <- log(spec.pgram(x,plot=FALSE)$spec)
     lambdasX <- spec.pgram(x,plot=FALSE)$freq
@@ -471,17 +606,22 @@ diss.SPEC.ISD <- function(x,y, plot=FALSE) {
     hY <- 0.93*dpill(lambdasY, YksY)
     
     integraISDaux <- function(lambda) {
-        (myf(lambda, YksX, lambdasX  , hX) - myf(lambda,YksY, lambdasY,  hY))**2
+        (.vectorized.lk.optim(lambda, YksX, lambdasX  , hX) - .vectorized.lk.optim(lambda,YksY, lambdasY,  hY))**2
     }
-    tryCatch( {
-        a <- integrate(integraISDaux, min(lambdasX), max(lambdasX) )$value
-    }, error = function(e) {
-        hX <- 2*hX
-        hY <- 2*hY
-        a <- integrate(integraISDaux, min(lambdasX), max(lambdasX) )$value
-    })
+    a <- 0
+    if (n > 0) {
+        a <- multidiss.interp.SPEC(list(x,y), n, interp.SPEC.LOGLIKELIHOOD , integrate.ISD)
+    } else {
+        tryCatch( {
+            a <- integrate(integraISDaux, min(lambdasX), max(lambdasX) )$value
+        }, error = function(e) {
+            hX <- 2*hX
+            hY <- 2*hY
+            a <- integrate(integraISDaux, min(lambdasX), max(lambdasX) )$value
+        })
+    }
     if (plot) {
-        plotsmoothspec(lambdasX, YksX, lambdasY, YksY, myf, hX, hY)
+        plotsmoothspec(lambdasX, YksX, lambdasY, YksY, .vectorized.lk.optim, hX, hY, n)
     }  
     a
 }
@@ -519,11 +659,11 @@ diss.SPEC.ISD <- function(x,y, plot=FALSE) {
 }
 
 
-cepstral <- function(x, h, order=NULL, seasonal) {
+cepstral <- function(x, h, order=NULL, seasonal, permissive) {
     ARx <- NULL
-    valid.order <- !sum(is.na(order))
+    
     SAR <- NULL
-    if (!valid.order) {
+    if (is.null(order)) { #if order null, fit automatically
         ARx <- ar(x,order.max=min(length(x)-1,h))
     } else {
         if ((order[1]) < 1) stop("The arima order must have AR coefficients, they are used for the distance")
@@ -535,8 +675,10 @@ cepstral <- function(x, h, order=NULL, seasonal) {
     }
     
     if (length(ARx$ar) < 1) {
-        warning("Cepstral distance, error on the selection of the AR order, 0 by AIC, forcing 1")
-        ARx  <- ar(x, aic=FALSE, order.max=1)
+        if (permissive) {
+            warning("Cepstral distance, error on the selection of the AR order, 0 by AIC, forcing 1")
+            ARx  <- ar(x, aic=FALSE, order.max=1)
+        }
         if (length(ARx)<1) {
             stop("Could not find any AR coefficient")      
         }
@@ -555,33 +697,18 @@ cepstral <- function(x, h, order=NULL, seasonal) {
 }
 
 
-diss.AR.LPC.CEPS <- function(x, y, k=50 , order=NULL, seasonal=list( list(order = c(0, 0, 0), period = NA), list(order = c(0, 0, 0), period = NA)) ) {
-    if (is.null(order)) {
-        order <- rbind(c(NA,NA,NA), c(NA,NA,NA))
+diss.AR.LPC.CEPS <- function(x, y, k=50, order.x=NULL, order.y= NULL,
+                    seasonal.x = list(order = c(0, 0, 0), period = NA),
+                    seasonal.y = list(order = c(0, 0, 0), period = NA),
+                    permissive=TRUE) {
+    .ts.sanity.check(x, y)
+    if (!is.list(seasonal.x) || !is.list(seasonal.y)) {
+            stop("Invalid seasonal part")
     }
-    cpx <- cepstral(x,k, order[1,], seasonal[[1]])
-    cpy <- cepstral(y,k, order[2,], seasonal[[2]])
+    cpx <- cepstral(x, k, order.x, seasonal.x, permissive)
+    cpy <- cepstral(y, k, order.y, seasonal.y, permissive)
     as.numeric(dist(rbind(cpx[1,],cpy[1,])) + dist(rbind(cpx[2,],cpy[2,])))
 }
-
-
-#prototyping multiple parameter per series distance
-multidiss.AR.LPC.CEPS <- function( series, k=50, order=NULL, seasonal=NULL) {
-    distances <- matrix(0, nrow(series), nrow(series))
-    rownames(distances) <- rownames(series)
-    if (is.null(seasonal)) {
-        seasonal <- rep( list( list(order=c(0,0,0), period=NA)), nrow(series) )
-    }
-    for ( i in 1:(nrow(series)-1) ) {
-        for (j in (i+1):nrow(series) ) {
-            distance <- diss.AR.LPC.CEPS(series[ i,], series[j,], k , rbind(order[i,], order[j,]) , list(seasonal[[i]], seasonal[[j]]) )
-            distances[ i, j] <- distance
-            distances[ j, i] <- distance
-        }
-    }
-    as.dist((distances))
-}
-
 
 
 #############################################################################
@@ -596,6 +723,7 @@ corrtemporder1 <- function (x, y) {
 }
 
 diss.CORT <- function( x, y, k=2, deltamethod="Euclid") {
+    .ts.sanity.check(x, y)
     .check.equal.length.ts(x,y)
     corrt <- corrtemporder1(x,y)
     type <-  (pmatch(deltamethod, c("Euclid", "Frechet", "DTW")))
@@ -658,8 +786,8 @@ pvalues.clust <- function(pvalues,significance) {
     }
     
     
-    is_pvalue_of_element_less_than_significance_with_the_set <- function( element, setid, setlist, significance,distances) {
-        sum(distances[element, setlist[[setid]]] < significance) == length(setlist[[setid]])
+    is_pvalue_of_element_less_than_significance_with_any_in_set <- function( element, setid, setlist, significance,distances) {
+        sum(distances[element, setlist[[setid]]] < significance) > 0
     }
     
     add_to_set <- function ( element, setindex, setlist) {
@@ -731,7 +859,7 @@ pvalues.clust <- function(pvalues,significance) {
                 if (conj < 2) {  #is each(ALL) series already in a cluster = NO
                     conj <- find_which_set( combinaciones[1,i], grupos )
                     if (conj > 0) { #one of the series in the pair already in a cluster = YES (x)
-                        if (is_pvalue_of_element_less_than_significance_with_the_set( combinaciones[2,i], conj, grupos, significacion, distancias  )    ) {
+                        if (is_pvalue_of_element_less_than_significance_with_any_in_set( combinaciones[2,i], conj, grupos, significacion, distancias  )    ) {
                             grupos <- create_new_set(combinaciones[2,i], grupos)
                         } else {
                             grupos <- add_to_set( combinaciones[2,i], conj, grupos )
@@ -739,7 +867,7 @@ pvalues.clust <- function(pvalues,significance) {
                     } else {
                         conj <- find_which_set( combinaciones[2,i], grupos )
                         if (conj > 0) {#one of the series in the pair already in a cluster = YES (y)
-                            if (is_pvalue_of_element_less_than_significance_with_the_set( combinaciones[1,i], conj, grupos, significacion, distancias  )    ) {
+                            if (is_pvalue_of_element_less_than_significance_with_any_in_set( combinaciones[1,i], conj, grupos, significacion, distancias  )    ) {
                                 grupos <- create_new_set(combinaciones[1,i], grupos)
                             } else {
                                grupos <- add_to_set( combinaciones[1,i], conj, grupos )
@@ -790,7 +918,7 @@ testIgualdadMaharajHCLUST <- function( distancias, pvalor) {
 
 wavelet.feature.extraction <- function(series) {
     
-    calcEnergies <- function( wavdecomp) {
+    calcEnergies <- function(wavdecomp) {
         level <- length(wavdecomp$data) -1
         energyD <- rep.int(0,level)
         energyD[1] <- sum(wavdecomp$data[[1]]**2)
@@ -800,7 +928,7 @@ wavelet.feature.extraction <- function(series) {
         return (energyD)
     }
     
-    
+    #fill with zeroes
     max.level <- as.integer(ceiling(logb(length(series[1,]),base=2)))
     true.level <- as.integer(floor(logb(length(series[1,]),base=2)))
     if (max.level != true.level) {
@@ -812,7 +940,7 @@ wavelet.feature.extraction <- function(series) {
     
     energies <- matrix(0, nrow=nrow(series), ncol = max.level)
     for ( i in 1:nrow(series) ) {
-        wavdecomp <- wavDWT(series[i,], n.levels=max.level, wavelet="haar")
+        wavdecomp <- wmtsa::wavDWT(series[i,], n.levels=max.level, wavelet="haar")
         energies[i,] <- calcEnergies(wavdecomp)
     }
     
@@ -837,10 +965,10 @@ wavelet.feature.extraction <- function(series) {
 diss.DWT <- function(series) {
     if ( length(dim(series)) == 2 ) {
         if ( dim(series)[1] < 2 ) {
-            stop( "diss.DWR needs a minimum of 2 series to compute the distance, incorrect amount provided" )
+            stop( "diss.DWT needs a minimum of 2 series to compute the distance, incorrect amount provided" )
         }
     } else {
-        stop( "diss.DWR series matrix with incorrect dimensions" ) 
+        stop( "diss.DWT series matrix with incorrect dimensions" ) 
     }
     wt <- wavelet.feature.extraction( series )
     dist(wt)
@@ -852,7 +980,8 @@ diss.DWT <- function(series) {
 
 
 
-diss.COR <- function(x,y, beta = NULL) {
+diss.COR <- function(x, y, beta = NULL) {
+    .ts.sanity.check(x, y)
     correl <- cor(x,y)
     if (is.null(beta)) {
         sqrt(2*(1- correl))
@@ -865,15 +994,60 @@ diss.COR <- function(x,y, beta = NULL) {
 }
 
 
+####################################################################################
+########################## CDM KEOGH 2004 ##########################################
+################## Compression based data mining of sequential data ################
+####################################################################################
+
+#common part of compression methods,
+#calculate the sizes of the compressed series and of their concatenation
+.compression.lengths <- function(x, y, type) {       
+    methods <- type
+    type = match.arg(type, c("gzip", "bzip2", "xz", "min"))
+    if (type == "min") { #choose the best compression method of the three 
+        methods <- c("gzip", "bzip2", "xz")
+    }
+    xy <- as.character(c(x,y))
+    x <- as.character(x)
+    y <- as.character(y)
+    cxym <- sapply( methods, function(m) { length( memCompress(xy, type=m) )})
+    cxy <- min(cxym)
+    cx <- min(sapply( methods, function(m) { length( memCompress(x, type=m) )}))
+    cy <- min(sapply( methods, function(m) { length( memCompress(y, type=m) )}))
+    list(cx=cx, cy=cy, cxy=cxy)
+}
+
+#length of the compressed concatenated series / sum lengths of the compressed series
+diss.CDM <- function(x, y, type="min") {
+    .ts.sanity.check(x, y)
+    comp <- .compression.lengths(x,y, type)    
+    comp$cxy / (comp$cx + comp$cy)
+}
 
 
+###################################################################################
+####### Clustering by Compression (2005), Cilibrasi, R., Vitanyi, P.M.B.,  ########
+######## Normalized Compression Distance ##########################################
+###################################################################################
+diss.NCD <- function(x,y, type="min") {
+    .ts.sanity.check(x,y)
+    comp <- .compression.lengths(x,y, type)  
+    (comp$cxy - min(comp$cx,comp$cy)) / max(comp$cx, comp$cy)
+}
 
+##############################################################
+################# COMPLEXITY BASED DISTANCE ##################
+#BatistaWangKeogh_2011_SDM_A complexity invariant distance measure for TS#
+##############################################################
 
-########################################################################
-################# MULTIPLE SERIES DISTANCE GENERATION ##################
-########################################################################
-
-
+diss.CID = function(x, y) {
+    .ts.sanity.check(x, y)
+    .check.equal.length.ts(x,y)
+    CED.x = sqrt( sum( diff(x)^2) ) #complexities of the series
+    CED.y = sqrt( sum( diff(y)^2) )
+    CF = max(CED.x, CED.y) / min(CED.x, CED.y) #complexity correction factor
+    CF * dist(rbind(x,y))
+}
 
 
 
@@ -887,6 +1061,12 @@ Sim <- function(Gi, Sj, G, S) {
 }
 
 cluster.evaluation <- function(G,S) {
+    if (length(G) != length(S)) {
+        stop("Different amount of elements between cluster solutions")
+    }
+    if (any(is.na(G)) || any(is.na(S))) {
+        stop("NA in the cluster solutions")
+    }
     acum <- 0
     gclust <- unique(G)
     sclust <- unique(S)
@@ -903,6 +1083,189 @@ cluster.evaluation <- function(G,S) {
     acum/(length(gclust))
 }
 
+
+###################################################################
+########################### DISS WRAPPER ##########################
+###################################################################
+
+#series is a list with time series
+#dissfun is a function that takes the list of series and their indices, and extra paramters
+#... parameters for dissfun
+pairwise.diss <- function(series, dissfun, ...) {    
+    n <- length(series)
+    distances <- matrix(0, n, n)
+    for (i in 1:(n-1)) {
+        for (j in (i+1):n) {
+            tryCatch( {
+                d <- dissfun( series, i, j, ...)
+                distances[i,j] <- d
+                distances[j,i] <- d
+            }, error = function (e) {
+                stop( paste("Applying diss, series (",i,",",j,") produced the following error: ", e) )
+            })
+        }
+    }
+    as.dist((distances))
+}
+
+noindicesdiss <- function( fun ) {
+    function(series, i, j, ...) {
+        fun(series[[i]], series[[j]], ...)
+    }
+}
+
+diss <- function(SERIES, METHOD, ...) {
+    if (!is.matrix(SERIES) && !is.list(SERIES) && !is.mts(SERIES)) {
+        stop("list, mts, matrix or data.frame object is required for SERIES ")
+    }
+    mat.ser <- SERIES
+    if (is.mts(SERIES)) {
+        SERIES <- t( as.matrix(SERIES))
+    }
+    
+    if (!is.list(SERIES)) {
+        tmpser <- SERIES
+        SERIES <- list()
+        for (i in 1:nrow(tmpser)) {
+            SERIES[[i]] <- tmpser[i,]
+        }
+        names(SERIES) <- rownames(tmpser)
+    }
+    
+    #common check for input parameters
+    if (any(is.na(unlist(SERIES)))) {
+        stop("NA in the series")
+    }
+    if (length(SERIES) < 2) {
+        stop("Only one series provided")
+    }
+    
+    list.to.matrix <- function(series) {
+        n <- length(series)
+        k <- length(series[[n]])
+        mat.ser <- matrix(0, n, k)
+        for (i in 1:n) {
+            if ( length( series[[i]]) != k ) {
+                stop("diss method requires same length series")
+            }
+            mat.ser[i,] <- series[[i]]
+        }
+        rownames(mat.ser) <- names(series)
+        mat.ser
+    }
+
+    out.dist <- NULL
+    
+    METHODS = c("ACF", "PACF", "AR.MAH", "AR.PIC", "AR.LPC.CEPS", "PER", "INT.PER", "COR", "CORT", "DWT",
+                "PDC", "PRED", "MINDIST.SAX", "SPEC.LLR", "SPEC.GLK", "SPEC.ISD", "CDM", "CID", "NCD")
+    diss.method = match.arg(METHOD, METHODS)
+    #get the statistic of the MAHARAJ dissimilarity
+    diss.AR.MAH.STAT <- function(x,y, ...) {
+        diss.AR.MAH(x,y,...)$statistic
+    }
+    diss.AR.MAH.PVAL <- function(x,y, ...) {
+        diss.AR.MAH(x,y,...)$p_value
+    }
+    diss.fun <- switch(diss.method,
+        ACF = diss.ACF,
+        PACF = diss.PACF,
+        AR.MAH = diss.AR.MAH,
+        AR.PIC = diss.AR.PIC,
+        AR.LPC.CEPS = diss.AR.LPC.CEPS,
+        PER = diss.PER,
+        INT.PER = diss.INT.PER,
+        COR = diss.COR,
+        CORT = diss.CORT,
+        DWT = diss.DWT,
+        PRED = multidiss.PRED,
+        SPEC.LLR = diss.SPEC.LLR,
+        SPEC.GLK = diss.SPEC.GLK,
+        SPEC.SD = diss.SPEC.ISD,
+        MINDIST.SAX = diss.MINDIST.SAX,
+        PDC = pdc.dist,
+        CDM = diss.CDM,
+        CID = diss.CID,
+        NCD = diss.NCD)
+    
+    if (diss.method == "DWT") { #diss dwt is not a pairwise diss, we cannot use proxy::dist
+        out.dist <- diss.DWT( list.to.matrix(SERIES) )
+    } else if (diss.method == "AR.PIC") {
+        multi.PIC <- function(SERIES, i, j, order=NULL, permissive=TRUE, order.x=NULL, order.y=NULL) {
+            if (!is.null(order.x) || !is.null(order.y) ) {
+                stop("AR.PIC from the diss wrapper function must be called using 'order' argument, not with
+                     order.x and order.y, see diss.AR.PIC help page")
+            }
+             diss.AR.PIC(SERIES[[i]], SERIES[[j]], order[i,], order[j,], permissive)
+        }
+        out.dist <- pairwise.diss(SERIES, multi.PIC, ...)
+    } else if (diss.method == "AR.LPC.CEPS") {
+        multi.CEPS <- function(series, i, j, k=50, order=NULL, seasonal=NULL, permissive=TRUE,
+                        order.x=NULL, order.y=NULL, seasonal.x=NULL, seasonal.y=NULL) { #arguments to inform incorrect usage
+            if (!is.null(order.x) || !is.null(order.y) || !is.null(seasonal.x) || !is.null(seasonal.y)) {
+                stop("AR.LPC.CEPS from the diss wrapper function must be called using 'order' and 'seasonal' arguments, not with
+                     order.x, order.y, seasonal.x or seasonal.y arguments, see diss.AR.LPC.CEPS help page")
+            }
+            if (is.null(seasonal)) {
+                seasonal[[i]] <-  list(order=c(0,0,0), period=NA)
+                seasonal[[j]] <-  list(order=c(0,0,0), period=NA)
+            }
+            distance <- diss.AR.LPC.CEPS(series[[i]], series[[j]], k, order[i,], order[j,], seasonal[[i]], seasonal[[j]] )
+        }
+        out.dist <- pairwise.diss(SERIES, multi.CEPS, ...)
+    } else if (diss.method == "PRED") {
+        return( multidiss.PRED(SERIES, ...) ) #TODO proper names
+    } else if (diss.method == "AR.MAH") {
+
+        statistic = pairwise.diss( SERIES, noindicesdiss(diss.AR.MAH.STAT), ...)
+        p_value = pairwise.diss( SERIES, noindicesdiss(diss.AR.MAH.PVAL), ...)
+        return( list(statistic=statistic, p_value=p_value) ) #TODO proper naming of the output
+    } else if (diss.method == "PDC") {
+        out.dist <- pdc.dist( t( list.to.matrix(SERIES) ), ...)
+    } else if (diss.method == "SPEC.LLR") { #for performance reasons, we must call these in a different way
+        out.dist <- multidiss.SPEC.LLR(SERIES, ...)
+    } else if (diss.method == "SPEC.GLK") { #for performance reasons, we must call these in a different way
+        out.dist <- multidiss.SPEC.GLK(SERIES, ...)
+    } else if (diss.method == "SPEC.ISD") { #for performance reasons, we must call these in a different way
+        out.dist <- multidiss.SPEC.ISD(SERIES, ...)
+    } else {
+        out.dist <- pairwise.diss( SERIES, noindicesdiss(diss.fun), ...)
+    }
+    out.dist <- as.dist(out.dist)
+    names(out.dist) <- names(SERIES)
+    out.dist
+}
+
+loo1nn.cv <- function(d, G) {
+    d <- as.matrix(d)
+    diag(d) <- max(d) + 1 #distance with self is not included
+    nearest.set <- apply ( d, 1, function(x) { #handle ties
+                                    which( x == min(x) )
+                                }
+                         )
+    
+    #mode auxiliary function
+    #based on http://stackoverflow.com/questions/2547402/standard-library-function-in-r-for-finding-the-mode
+    #with random tie breaking
+    my.mode <- function(x) {
+        ux <- unique(G[x])
+        if (length(ux) > 1) {
+            ux <- sample(ux)
+        }
+        prop <- tabulate(match(G[x], ux))
+        if (sum(prop == max(prop))>1) {
+            warning("There were ties on the voting, selecting one at random")
+        }
+        ux[which.max(prop)]
+    }
+    
+    #apply the mode, depending on whether apply obtained different amount of ties (list), the same amount(matrix) or no ties(vector) 
+    nearest <- switch( class(nearest.set), matrix = apply(nearest.set, 2, my.mode),
+                       numeric = apply(as.matrix(nearest.set), 1, my.mode),
+                       integer = apply(as.matrix(nearest.set), 1, my.mode),
+                       list = sapply(nearest.set, my.mode)
+    )
+    sum(nearest == G)/length(G)
+}
 
 ############################################################################
 #######################   OLD STUFF (UNUSED)   #############################

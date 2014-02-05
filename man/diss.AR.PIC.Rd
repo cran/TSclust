@@ -1,6 +1,5 @@
 \name{diss.AR.PIC}
 \alias{diss.AR.PIC}
-\alias{multidiss.AR.PIC}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Model-based Dissimilarity Measure Proposed by Piccolo (1990)%%  ~~function to do ... ~~
@@ -10,8 +9,8 @@ Computes the distance between two time series as the Euclidean distance between 
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
 }
 \usage{
-diss.AR.PIC(x, y, order=NULL)
-multidiss.AR.PIC( series, order=NULL)
+diss.AR.PIC(x, y, order.x=NULL, order.y=NULL, permissive=TRUE)
+
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -23,37 +22,37 @@ multidiss.AR.PIC( series, order=NULL)
     Numeric vector containing the second of the two time series.
 %%     ~~Describe \code{y} here~~
 }
-\item{order}{ Numeric matrix. Each row specifies the ARIMA models to be fitted for the series.}
-\item{series}{ Numeric matrix. Each row specifies one time series.}
+
+\item{order.x}{ Specifies the ARIMA model to be fitted for the series x. When using \code{diss} wrapper, use \code{order} argument instead. See details.}
+\item{order.y}{ Specifies the ARIMA model to be fitted for the series y. When using \code{diss} wrapper, use \code{order} argument instead. See details.}
+\item{permissive}{ Specifies whether to force an AR order of 1 if no order is found. Ignored if neither order.x or order.y are NULL}
 }
 \details{
-Each row of \code{order} contains the three components of the ARIMA model: the AR order, the degree of differencing and the MA order, specified as in the function \code{\link{arima}}. The first two rows correspond to series \code{x} and \code{y} respectively.
-If \code{order} is NULL, or any of the orders contains \code{NA} values, the corresponding series are fitted automatically imposing an AR model, selected automatically by AIC.
-\code{multidiss.AR.PIC} computes the similarity matrix for more that two series having different orders.
+If \code{order.x} or {order.y} are \code{NULL}, their respective series will be fitted automatically using a AR model. If \code{permissive} is \code{TRUE} and no AR order is found automatically, an AR order of 1 will be imposed, if this case fails, then no order can be found and the function produces an error.
+\code{order.x} and \code{order.y} contain the three components of the ARIMA model: the AR order, the degree of differencing and the MA order, specified as in the function \code{\link{arima}}.
+
+If using \code{diss} function with "AR.PIC" \code{method}, the argument \code{order} must be used instead of \code{order.x} and \code{order.y}. \code{orders} is a matrix with one row per ARIMA, specified as in \code{\link{arima}}. If \code{order} is \code{NULL}, automatic fitting imposing a AR model is performed.
+
 }
 
 \value{
 The computed distance.
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
 }
+
 \references{
 Piccolo, D. (1990) A distance measure for classifying arima models. \emph{J. Time Series
 Anal.}, \bold{11(2)}, 153--164.
 }
+
 \author{
 Pablo Montero Manso, José Antonio Vilar.
-%%  ~~who you are~~
 }
 
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-\code{\link{diss.AR.MAH}} \code{\link{diss.AR.LPC.CEPS}}
+\code{\link{diss.AR.MAH}}, \code{\link{diss.AR.LPC.CEPS}}, \code{\link{diss}}, \code{\link{arima}}, \code{\link{ar}}
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
@@ -62,12 +61,13 @@ x <- arima.sim(model=list(ar=c(0.4,-0.1)), n =100, n.start=100)
 y <- arima.sim(model=list(ar=c(0.9)), n =100, n.start=100)
 z <- arima.sim(model=list(ar=c(0.5, 0.2)), n =100, n.start=100)
 ## Compute the distance and check for coherent results
-diss.AR.PIC(x, y, rbind( c(2,0,0), c(1,0,0)) ) #ARIMA(2,0,0) for x and ARIMA(1,0,0) for y
-diss.AR.PIC(x, z, rbind( c(2,0,0), c(2,0,0)) )
+#ARIMA(2,0,0) for x and ARIMA(1,0,0) for y
+diss.AR.PIC( x, y, order.x = c(2,0,0), order.y = c(1,0,0) )
+diss.AR.PIC( x, z, order.x = c(2,0,0), order.y = c(2,0,0) )
 # AR for y (automatically selected) and ARIMA(2,0,0) for z
-diss.AR.PIC(y, z, rbind( c(NA,NA,NA), c(2,0,0)) ) 
+diss.AR.PIC( y, z, order.x=NULL, order.y=c(2,0,0) ) 
 #create a dist object for its use with clustering functions like pam or hclust
-multidiss.AR.PIC( rbind(x,y,z), order=rbind(c(2,0,0), c(1,0,0), c(2,0,0)) )
+diss( rbind(x,y,z), METHOD="AR.PIC", order=rbind(c(2,0,0), c(1,0,0), c(2,0,0)) )
 
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

@@ -13,10 +13,11 @@
 # load series dataset as a list (thus permitting to deal with series of different length)
 
 
-diss.PRED = function( x, y, h=5, B=500, logarithms=c(FALSE, FALSE), differences=c(0,0), plot=FALSE) {
-    
+diss.PRED = function( x, y, h, B=500, logarithm.x=FALSE, logarithm.y=FALSE, differences.x=0, differences.y=0, plot=FALSE) {
+    .ts.sanity.check(x, y)
     series <- list(x=x,y=y)
-    
+    logarithms = c(logarithm.x, logarithm.y)
+    differences = c(differences.x, differences.y)
     # GENERAL INPUT PARAMETER VALUES
     #B <- 1000  		# number of bootstrap resamples 
     #k <- 5			# length of the forecast horizon
@@ -59,7 +60,7 @@ diss.PRED = function( x, y, h=5, B=500, logarithms=c(FALSE, FALSE), differences=
     orig.series = cbind(x,y) #store untransformed series
     logarithms = 1 - logarithms #the transformation functions take 0 as do logarithm, counter-intuitive
     trans.series = transf.TRAMO( cbind(x,y), logarithms, differences )
-    series = list( x= trans.series$T.Ser[,1], y= trans.series$T.Ser[,2])
+    series = list( x= trans.series$T.Ser[,1], y= trans.series$T.Ser[,2] )
     
     
     
@@ -151,31 +152,71 @@ diss.PRED = function( x, y, h=5, B=500, logarithms=c(FALSE, FALSE), differences=
         legend("topright", pch=16, col=c("red", "blue"), legend= c("x", "y") )
     }
     
-    list( L1dist = DL1[1,2], dens.x = density.k.prediction[,,1], dens.y = density.k.prediction[,,2] )
+    list( L1dist = DL1[1,2], dens.x = density.k.prediction[,,1], dens.y = density.k.prediction[,,2] ,
+          bx.x = bw.k.prediction[1], bw.y = bw.k.prediction[2])
 }
 
 
+ L1dist <- function( density.x, density.y, bw.x, bw.y) {
+ r <- range(density.x[,1], density.y[,1])
+ a <- r[1] - 0.025*(r[2]-r[1]) ; b <- r[2] + 0.025*(r[2]-r[1])
+ integrand_L1 <- function(u) 
+ {
+     abs( estimator.density( density.x, u, bw.x ) - estimator.density( density.y, u, bw.y ) )
+ }
+ DL1 <- 2
+ tryCatch( {
+     DL1 <- integrate( integrand_L1, lower=a, upper=b)$value }, error = function(e) {
+         plot.default( density.x, type="l", col="red", lwd=2, main="Error, problem intergrating the L1 distance of these densities, approximating...", xlab="", ylab="Density",
+                       xlim=c(min(density.x[,1], density.y[,1]), max(density.x[,1], density.y[,1])), ylim=c(0, max(density.x[,2], density.y[,2]) ) )
+         lines( density.y, col="blue", lwd=2 )
+         legend("topright", pch=16, col=c("red", "blue"), legend= c("x", "y") )
+         DL1 <- integrate( integrand_L1, lower=a, upper=b, stop.on.error=FALSE)$value
+     })
+    DL1
+}
 
 #prototyping multiple parameter per series distance
-multidiss.PRED = function( series, h=5, B=500, logarithms=NULL, differences=NULL, plot=FALSE) {
-    distances <- matrix(0, nrow(series), nrow(series))
-    rownames(distances) <- rownames(series)
+multidiss.PRED = function( series, h, B=500, logarithms=NULL, differences=NULL, plot=FALSE) {
+    n <- length(series)
+    distances <- matrix(0, n, n)
+    rownames(distances) <- names(series)
     if (is.null(logarithms)) {
-        logarithms <- rep(FALSE, nrow(series))
+        logarithms <- rep(FALSE, n)
     }
     if (is.null(differences)) {
-        differences <- rep(0, nrow(series))
+        differences <- rep(0, n)
     }
     densities <- list()
-    for ( i in 1:(nrow(series)-1) ) {
-        for (j in (i+1):nrow(series) ) {
-            distance <- diss.PRED(series[ i,], series[j,], h , B, c(logarithms[i], logarithms[j]) , c(differences[i], differences[j]), FALSE )
-            distances[ i, j] <- distance$L1dist
-            distances[ j, i] <- distance$L1dist
-            densities[[i]] <- distance$dens.x
-            densities[[j]] <- distance$dens.y
+    #calc first all the individual densities by applying diss.PRED with the first
+    individual.dens <- list()
+    ii = 1
+    while (ii < n) {
+        dP <- diss.PRED(series[[ii]], series[[ii+1]], h , B, logarithms[ii], logarithms[ii+1] , differences[ii], differences[ii+1], FALSE )
+        individual.dens[[ii]] <- list(dens=dP$dens.x, bw=dP$bw.x)
+        individual.dens[[ii+1]] <- list(dens=dP$dens.y, bw=dP$bw.y)
+        ii = ii + 2
+        if (ii == n) ii = ii -1
+    }
+    for ( i in 1:(n-1) ) {
+        for (j in (i+1):n ) {
+            distance <- L1dist(individual.dens[[i]]$dens, individual.dens[[j]]$dens, individual.dens[[i]]$bw, individual.dens[[j]]$bw )
+            distances[ i, j] <- distance
+            distances[ j, i] <- distance
+            densities[[i]] <- individual.dens[[i]]$dens
+            densities[[j]] <- individual.dens[[j]]$dens
         }
     }
+    #old way, less efficient
+#     for ( i in 1:(n-1) ) {
+#         for (j in (i+1):n ) {
+#             distance <- diss.PRED(series[[i]], series[[j]], h , B, logarithms[i], logarithms[j] , differences[i], differences[j], FALSE )
+#             distances[ i, j] <- distance$L1dist
+#             distances[ j, i] <- distance$L1dist
+#             densities[[i]] <- distance$dens.x
+#             densities[[j]] <- distance$dens.y
+#         }
+#     }
     
     if (plot) {
         colors <- rainbow(length(densities))

@@ -46,6 +46,8 @@ More details of the procedure can be seen in Chouakria-Douzal and Nagabhushan (2
  
 \code{deltamethod} (\eqn{\delta}) can be either Euclidean (\code{deltamethod = "Euclid"}), Frechet (\code{ deltamethod = "Frechet"}) or Dynamic Time Warping (\code{deltamethod ="DTW"}) distances.
 
+For using Frechet or Dynamic Time Warping Distances alone (\code{k} = 0), see \code{\link[longitudinalData]{distFrechet}} or \code{\link[dtw]{dtw}}.
+
 }
 \value{
 The computed distance.
@@ -65,7 +67,7 @@ Pablo Montero Manso, José Antonio Vilar.
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-\code{\link{diss.COR}}
+\code{\link{diss.COR}}, \code{\link[longitudinalData]{distFrechet}}, \code{\link[dtw]{dtw}}.
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
@@ -79,7 +81,7 @@ diss.CORT(x, z, 2)
 diss.CORT(y, z, 2)
 #create a dist object for its use with clustering functions like pam or hclust
 \dontrun{
-proxy::dist( rbind(x,y,z), method=diss.CORT, k=3,deltamethod="DTW")
+diss( rbind(x,y,z), "CORT", k=3,deltamethod="DTW")
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

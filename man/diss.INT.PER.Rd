@@ -65,7 +65,7 @@ diss.INT.PER(x, y, normalize=TRUE)
 diss.INT.PER(x, y, normalize=TRUE)
 diss.INT.PER(x, y, normalize=TRUE)
 \dontrun{
-proxy::dist( rbind(x,y,z), diss.INT.PER, normalize=FALSE )
+diss( rbind(x,y,z), "INT.PER", normalize=FALSE )
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
