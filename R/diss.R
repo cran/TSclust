@@ -1183,7 +1183,7 @@ diss <- function(SERIES, METHOD, ...) {
         SPEC.GLK = diss.SPEC.GLK,
         SPEC.SD = diss.SPEC.ISD,
         MINDIST.SAX = diss.MINDIST.SAX,
-        PDC = pdc.dist,
+        PDC = pdcDist,
         CDM = diss.CDM,
         CID = diss.CID,
         NCD = diss.NCD,
@@ -1224,7 +1224,7 @@ diss <- function(SERIES, METHOD, ...) {
         p_value = pairwise.diss( SERIES, noindicesdiss(diss.AR.MAH.PVAL), ...)
         return( list(statistic=statistic, p_value=p_value) ) #TODO proper naming of the output
     } else if (diss.method == "PDC") {
-        out.dist <- pdc.dist( t( list.to.matrix(SERIES) ), ...)
+        out.dist <- pdcDist( t( list.to.matrix(SERIES) ), ...)
     } else if (diss.method == "SPEC.LLR") { #for performance reasons, we must call these in a different way
         out.dist <- multidiss.SPEC.LLR(SERIES, ...)
     } else if (diss.method == "SPEC.GLK") { #for performance reasons, we must call these in a different way
@@ -1284,7 +1284,7 @@ diss.FRECHET <- function(x,y,...) {
     distFrechet(abscissex,x,abscissey,y, ...)
 }
 diss.PDC <- function(x,y, ...) {
-    pdc.dist(cbind(x,y), ...)
+    pdcDist(cbind(x,y), ...)
 }
 ############################################################################
 #######################   OLD STUFF (UNUSED)   #############################

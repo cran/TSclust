@@ -45,8 +45,8 @@ Methods that have arguments that require one value per time series in \code{seri
 \item "INT.PER" Integrate Periodogram-based method. See \code{\link{diss.INT.PER}}.
 \item "NCD" Normalized Compression Distance. See \code{\link{diss.NCD}}.
 \item "PACF" Partial Autocorrelation-based method. See \code{\link{diss.PACF}}.
-\item "PDC" Permutation distribution divergence. Uses the \code{\link{pdc}} package. See \code{\link[pdc]{pdc.dist}} for 
-additional arguments and details. Note that series given by numeric matrices are interpreted row-wise and not column-wise, opposite as in \code{\link[pdc]{pdc.dist}}.
+\item "PDC" Permutation distribution divergence. Uses the \code{\link{pdc}} package. See \code{\link[pdc]{pdcDist}} for 
+additional arguments and details. Note that series given by numeric matrices are interpreted row-wise and not column-wise, opposite as in \code{\link[pdc]{pdcDist}}.
 \item "PER" Periodogram-based method. See \code{\link{diss.PER}}.
 \item "PRED" Prediction Density-based method. This method has two value-per-series agument, the logarithm and difference transform. See \code{\link{diss.PRED}}.
 \item "MINDIST.SAX" Distance that lower bounds the Euclidean, based on the Symbolic Aggregate approXimation measure. See \code{\link{diss.MINDIST.SAX}}.

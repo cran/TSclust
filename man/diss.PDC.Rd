@@ -22,13 +22,13 @@ diss.PDC(x, y, ...)
 %%     ~~Describe \code{y} here~~
 }
 \item{\dots}{
-  Additional parameters for the function. See \code{link[pdc]{pdc.dist}}.
+  Additional parameters for the function. See \code{link[pdc]{pdcDist}}.
 }
 
 }
 
 \details{
- This is basically a wrapper for \code{pdc.dist} of the \code{\link{pdc}} package, intended for an easier discovery of the functionalities used in TSclust.
+ This is basically a wrapper for \code{pdcDist} of the \code{\link{pdc}} package, intended for an easier discovery of the functionalities used in TSclust.
 }
 
 \value{
@@ -39,7 +39,7 @@ The computed distance.
 
 
 \seealso{
- \code{\link{diss}}, \code{link[pdc]{pdc.dist}}
+ \code{\link{diss}}, \code{link[pdc]{pdcDist}}
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{

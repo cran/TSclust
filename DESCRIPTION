@@ -1,7 +1,7 @@
 Package: TSclust
 Type: Package
 Title: Time series clustering utilities
-Version: 1.2.1
+Version: 1.2.2
 Date: 2014-4-30
 Encoding: UTF-8
 Author: Pablo Montero Manso, José Antonio Vilar
@@ -10,7 +10,7 @@ Description: This package contains a set of measures of dissimilarity between ti
 License: GPL-2
 Depends: R (>= 3.0.1), wmtsa, pdc, cluster
 Imports: locpol, KernSmooth, dtw, longitudinalData
-Packaged: 2014-04-30 15:50:44 UTC; pmont
+Packaged: 2014-10-28 20:32:55 UTC; pmont
 NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2014-04-30 18:53:42
+Date/Publication: 2014-10-28 21:58:12
