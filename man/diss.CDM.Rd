@@ -33,8 +33,8 @@ The compression based  dissimilarity is calculated: \deqn{ d(x,y) = C(xy) / ( C(
 \eqn{C(xy)} is the size in bytes of the series \eqn{x} and \eqn{y} concatenated. The algorithm used for compressing the series is chosen with \code{type}.
 \code{type} can be "gzip", "bzip2" or "xz", see \code{\link{memCompress}}. "min" selects the best separately for \code{x}, \code{y} and the concatenation.
 Since the compression methods are character-based, a symbolic representation can be used, see details for an example using SAX as the symbolic representation.
-
-
+The series are transformed to a text representation prior to compression using \code{as.character}, so small numeric differences may produce significantly different text representations. 
+While this dissimilarity is asymptotically symmetric, for short series the differences between \code{diss.CDM(x,y)} and \code{diss.CDM(y,x)} may be noticeable.
 
 }
 \value{
@@ -68,6 +68,7 @@ diss(series, "CDM", type="bzip2")
 
 ################################################################
 #####symbolic representation prior to compression, using SAX####
+####simpler symbolization, such as round() could also be used###
 ################################################################
 #normalization function, required for SAX
 z.normalize = function(x) {

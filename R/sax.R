@@ -85,7 +85,7 @@ to.char.representation <- function(x) {
 
 diss.MINDIST.SAX <- function(x, y, w, alpha=4, plot=FALSE) {
     .ts.sanity.check(x, y)
-    n = length(x)
+    n <- length(x)
     x <- (x - mean(x)) / sd(x) #series z-normalization
     y <- (y - mean(y)) / sd(y)
     PAAx <- PAA(x, w) #PAA dimensionality reduction

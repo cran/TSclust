@@ -8,8 +8,8 @@ z.normalize = function(x) {
 }
 
 range.normalize = function(x) {
-    minim = min(x)
-    maxim = max(x)
+    minim <- min(x)
+    maxim <- max(x)
     (x -minim) / (maxim - minim)    
 }
 
@@ -734,10 +734,10 @@ diss.CORT <- function( x, y, k=2, deltamethod="Euclid") {
         typedist <- as.numeric( dist(rbind(x,y)) )
     }
     else if (type == 2) {
-        typedist <- distFrechet(x,y)
+        typedist <- diss.FRECHET(x,y)
     }
     else if (type == 3) {
-        typedist <- dtw(x,y,distance.only=T)$distance
+        typedist <- dtw(x,y, dist.method="Manhattan", distance.only=T)$distance
     }
     
     (2/( 1+ exp(k*corrt)))*typedist
@@ -1157,7 +1157,8 @@ diss <- function(SERIES, METHOD, ...) {
     out.dist <- NULL
     
     METHODS = c("ACF", "PACF", "AR.MAH", "AR.PIC", "AR.LPC.CEPS", "PER", "INT.PER", "COR", "CORT", "DWT",
-                "PDC", "PRED", "MINDIST.SAX", "SPEC.LLR", "SPEC.GLK", "SPEC.ISD", "CDM", "CID", "NCD")
+                "PDC", "PRED", "MINDIST.SAX", "SPEC.LLR", "SPEC.GLK", "SPEC.ISD", "CDM", "CID", "NCD", "DTWARP", "FRECHET",
+                "EUCL")
     diss.method = match.arg(METHOD, METHODS)
     #get the statistic of the MAHARAJ dissimilarity
     diss.AR.MAH.STAT <- function(x,y, ...) {
@@ -1185,7 +1186,10 @@ diss <- function(SERIES, METHOD, ...) {
         PDC = pdc.dist,
         CDM = diss.CDM,
         CID = diss.CID,
-        NCD = diss.NCD)
+        NCD = diss.NCD,
+        DTWARP = diss.DTWARP,
+        FRECHET = diss.FRECHET,
+        EUCL = diss.EUCL)
     
     if (diss.method == "DWT") { #diss dwt is not a pairwise diss, we cannot use proxy::dist
         out.dist <- diss.DWT( list.to.matrix(SERIES) )
@@ -1267,6 +1271,21 @@ loo1nn.cv <- function(d, G) {
     sum(nearest == G)/length(G)
 }
 
+#wrappers for easier discovery of the available functions
+diss.EUCL <- function(x, y) {
+    dist(rbind(x,y))
+}
+diss.DTWARP <- function(x,y,...) {
+    dtw(x,y, ...)$distance
+}
+diss.FRECHET <- function(x,y,...) {
+    abscissex = 1:length(x)
+    abscissey = 1:length(y)
+    distFrechet(abscissex,x,abscissey,y, ...)
+}
+diss.PDC <- function(x,y, ...) {
+    pdc.dist(cbind(x,y), ...)
+}
 ############################################################################
 #######################   OLD STUFF (UNUSED)   #############################
 ############################################################################

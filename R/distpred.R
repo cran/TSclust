@@ -81,7 +81,7 @@ diss.PRED = function( x, y, h, B=500, logarithm.x=FALSE, logarithm.y=FALSE, diff
         # Nonparametric approach to generate bootstrap predictions: 
         aux <- pred.AB.CB(series[[punt]], nw.band, length.grid, l, CM, B, innov.sobrantes, 2, k, 0, 1) #only conditional BOOTSTRAP				
         # conditional bootstrap 
-        path.k.prediction[,,punt] <- aux$CB							
+        path.k.prediction[,,punt] <- aux$CB						
         
     }
     
@@ -89,7 +89,7 @@ diss.PRED = function( x, y, h, B=500, logarithm.x=FALSE, logarithm.y=FALSE, diff
     # 1.1  BACKTRANSFORM THE PREDICTIONS
     #######################################################################################
     
-    back.pred = backtransf.TRAMO( path.k.prediction, trans.series$T.Ser, logarithms, differences, trans.series$Medias.log.series )
+    back.pred = backtransf.TRAMO( path.k.prediction, trans.series$M.L.Ser, logarithms, differences, trans.series$Medias.log.series )
     path.k.prediction = back.pred
     
     
@@ -220,15 +220,15 @@ multidiss.PRED = function( series, h, B=500, logarithms=NULL, differences=NULL, 
     
     if (plot) {
         colors <- rainbow(length(densities))
-        linetypes <- rep(1:6, 3)
+        linetypes <- rep(1:6, ceiling(length(densities)/6))
         #linetypes = sample(linetypes)
         predxlim <- range(lapply( densities, function(x) { range(x[,1]) }))
         predylim <- range(lapply( densities, function(x) { range(x[,2]) }))
-        plot( densities[[1]], type="l", col=colors[1], ylim=predylim, xlim=predxlim , xlab="", ylab="", main=paste("Prediction Densities \nAt horizon:", h), lty=linetypes[1], lwd=5)
+        plot( densities[[1]], type="l", col=colors[1], ylim=predylim, xlim=predxlim , xlab="", ylab="", main=paste("Prediction Densities \nAt horizon:", h), lty=linetypes[1], lwd=1)
         for ( i in 2:length(densities) ) {
-            lines(densities[[i]], col=colors[i], lty=linetypes[i], lwd=5)
+            lines(densities[[i]], col=colors[i], lty=linetypes[i], lwd=1)
         }
-        legend("topright", col=colors, legend= rownames(distances) , lty=linetypes, lwd=2 )
+        legend("topright", col=colors, legend= rownames(distances) , lty=linetypes, lwd=2, ncol=2 )
     }
     
     

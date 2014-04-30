@@ -1,3 +1,14 @@
+1.2.1
+	* Expanded/corrected documentation in several functions
+
+	* Corrected error in the transformation and backtransformation in diss.PRED
+	
+	* Added wrappers for several functions diss.EUCL, diss.DTW, diss.FRECHET, diss.PDC
+	
+	* Improved diss.PRED plot
+	
+	* Changed diss.CORT DTW method to use Manhattan instead of Euclidean as local distance
+	
 1.2
 	* Corrected changes in the documentation of the AR.LPC.CEPS
 	

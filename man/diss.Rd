@@ -1,7 +1,5 @@
 \name{diss}
 \alias{diss}
-\alias{diss.PDC}
-\concept{PDC}
 
 \title{
 TSclust Dissimilarity Computation
@@ -18,7 +16,7 @@ diss(SERIES, METHOD, ...)
        Numeric matrix, \code{list}, \code{data.frame} or \code{mts} object. Numeric matrices are interpreted row-wise (one series per row) meanwhile \code{data.frame} and \code{mts} objects are interpredted column-wise.
 }
   \item{METHOD}{
-      the dissimilarity measure to be used. This must be one of "ACF", "AR.LPC.CEPS", "AR.MAH", "AR.PIC", "CDM", "CID", "COR", "CORT", "DWT", "INT.PER",
+      the dissimilarity measure to be used. This must be one of "ACF", "AR.LPC.CEPS", "AR.MAH", "AR.PIC", "CDM", "CID", "COR", "CORT", "DTWARP", "DWT", "EUCL", "FRECHET", INT.PER",
                 "NCD", "PACF", "PDC",  PER", "PRED", "MINDIST.SAX", "SPEC.LLR", "SPEC.GLK" or "SPEC.ISD". Any unambiguous substring can be given.
                  See details for individual usage.
 }
@@ -40,7 +38,10 @@ Methods that have arguments that require one value per time series in \code{seri
 \item "CID" Complexity-Invariant distance. See \code{\link{diss.CID}}.
 \item "COR" Correlation-based method. See \code{\link{diss.COR}}.
 \item "CORT" Temporal Correlation and Raw values method. See \code{\link{diss.CORT}}.
+\item "DTWARP" Dynamic Time Warping method. See \code{\link{diss.DTWARP}}.
 \item "DWT" Discrete wavelet transform method. See \code{\link{diss.DWT}}.
+\item "EUCL" Euclidean distance. See \code{\link{diss.EUCL}}. For many more convetional distances, see \code{link[stats]{dist}}, though you may need to transpose the dataset.
+\item "FRECHET" Frechet distance. See \code{\link{diss.FRECHET}}.
 \item "INT.PER" Integrate Periodogram-based method. See \code{\link{diss.INT.PER}}.
 \item "NCD" Normalized Compression Distance. See \code{\link{diss.NCD}}.
 \item "PACF" Partial Autocorrelation-based method. See \code{\link{diss.PACF}}.
@@ -64,7 +65,7 @@ Pablo Montero Manso, José Antonio Vilar.
 %%  ~~who you are~~
 }
 \seealso{
- \code{\link[pdc]{pdc}}
+ \code{\link[pdc]{pdc}}, \code{\link[stats]{dist}}
 }
 \examples{
 data(electricity)

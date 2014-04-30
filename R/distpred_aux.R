@@ -35,7 +35,7 @@ pred.AB.CB <- function( serie, tipo.b.NW, l.grid, ancho.CV, cota, n.rep.boot, l.
         recursive.trycatch.bw <- function( trimval) {
             if (trimval > 0.3) stop(paste("Coud not find appropiate bandwith for a series,", trimval))
             g_m <- NULL
-            tryCatch( {  #catch common dpill problem an solve it be increasing trim
+            tryCatch( {  #catch common dpill problem and solve it be increasing trim
                 g_m <- dpill(nube[,1],nube[,2], trim=trimval) 
             }, error = function(e) {
                 gm <- recursive.trycatch.bw(trimval+0.01) 
@@ -197,10 +197,10 @@ pred.SB <- function( serie, n.rep.boot, l.sobrantes, l.horizon, metSB)
 
 
 
-backtransf.TRAMO <- function (t.Predicciones, t.Series, Logaritmos, Diferencias, 
+backtransf.TRAMO <- function (t.Predicciones, M.L.Series, Logaritmos, Diferencias, 
                               Medias) 
 {
-    lts <- dim(t.Series)[1]
+    lts <- dim(M.L.Series)[1]
     nhorizon <- dim(t.Predicciones)[1]
     nboot <- dim(t.Predicciones)[2]
     nmetodos <- 1
@@ -210,7 +210,7 @@ backtransf.TRAMO <- function (t.Predicciones, t.Series, Logaritmos, Diferencias,
     vector.xi <- vector("list", ns)
     for (j4 in 1:ns) for (j3 in 1:nmetodos) for (j2 in 1:nboot) {
         if (Diferencias[j4] > 0) {
-            vector.xi[[j4]] <- t.Series[(lts - Diferencias[j4] + 
+            vector.xi[[j4]] <- M.L.Series[(lts - Diferencias[j4] + 
                                              1):lts, j4]
             aux <- diffinv(t.Predicciones[, j2,  j4], differences = Diferencias[j4], 
                            xi = vector.xi[[j4]])
@@ -256,7 +256,7 @@ transf.TRAMO <- function (Series, Logaritmos, Diferencias)
         t.Series[, i] <- m.l.Series[(1 + MD):ls, i]
     }
     colnames(t.Series) <- colnames(Series)
-    list(T.Ser = t.Series, Medias.log.series = medias)
+    list(T.Ser = t.Series, M.L.Series=m.l.Series, Medias.log.series = medias)
 }
 
 

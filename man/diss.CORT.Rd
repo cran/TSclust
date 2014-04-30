@@ -44,9 +44,8 @@ where:
 
 More details of the procedure can be seen in Chouakria-Douzal and Nagabhushan (2007).
  
-\code{deltamethod} (\eqn{\delta}) can be either Euclidean (\code{deltamethod = "Euclid"}), Frechet (\code{ deltamethod = "Frechet"}) or Dynamic Time Warping (\code{deltamethod ="DTW"}) distances.
+\code{deltamethod} (\eqn{\delta}) can be either Euclidean (\code{deltamethod = "Euclid"}), Frechet (\code{ deltamethod = "Frechet"}) or Dynamic Time Warping (\code{deltamethod ="DTW"}) distances. When calling from \code{dis.CORT}, DTW uses Manhattan as local distance.
 
-For using Frechet or Dynamic Time Warping Distances alone (\code{k} = 0), see \code{\link[longitudinalData]{distFrechet}} or \code{\link[dtw]{dtw}}.
 
 }
 \value{
@@ -67,7 +66,7 @@ Pablo Montero Manso, José Antonio Vilar.
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-\code{\link{diss.COR}}, \code{\link[longitudinalData]{distFrechet}}, \code{\link[dtw]{dtw}}.
+\code{\link{diss.COR}}, \code{\link{diss.DTWARP}}, \code{\link{diss.FRECHET}}, \code{\link[longitudinalData]{distFrechet}}, \code{\link[dtw]{dtw}}.
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
@@ -81,7 +80,7 @@ diss.CORT(x, z, 2)
 diss.CORT(y, z, 2)
 #create a dist object for its use with clustering functions like pam or hclust
 \dontrun{
-diss( rbind(x,y,z), "CORT", k=3,deltamethod="DTW")
+diss( rbind(x,y,z), "CORT", k=3, deltamethod="DTW")
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
