@@ -48,6 +48,9 @@ The computed distance.
 }
 \references{
 Galeano, P. and Peña, D. (2000). Multivariate analysis in vector time series. \emph{Resenhas}, \bold{4 (4)}, 383--403.
+
+Montero, P and Vilar, J.A. (2014) \emph{TSclust: An R Package for Time Series Clustering.}  Journal of Statistical Software, 62(1), 1-43. \url{http://www.jstatsoft.org/v62/i01/.}
+
 }
 \author{
 Pablo Montero Manso, José Antonio Vilar.

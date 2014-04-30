@@ -11,9 +11,20 @@ This package contains several measures of dissimilarity between time series, som
 dissimilarities begin with diss.*, and a wrapper function \code{diss} is available. Cluster evaluation methods include \code{cluster.evaluation} and \code{loo1nn.cv}. A clustering algorithm based on pairwise p-values is implemented in \code{pvalues.clust}. The package should be used along with other existing clustering packages and function such as \code{hclust}, packages \code{cluster}, ...
 }
 
+\references{
+Montero, P and Vilar, J.A. (2014) \emph{TSclust: An R Package for Time Series Clustering.}  Journal of Statistical Software, 62(1), 1-43. \url{http://www.jstatsoft.org/v62/i01/.}
+}
+
+\author{
+Pablo Montero Manso, José Antonio Vilar. 
+}
+
+\seealso{
+ \code{\link{diss}}
+}
 
 \examples{
-#the avaliable dissimilarities can be found in the diss help, page (?diss)
+#the available dissimilarities can be found in the diss help, page (?diss)
 #and their individual pages from there.
 
 ### The most common use case begins with a set of time series we want to cluster.

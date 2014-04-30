@@ -42,6 +42,9 @@ The computed distance.
 \references{
 Piccolo, D. (1990) A distance measure for classifying arima models. \emph{J. Time Series
 Anal.}, \bold{11(2)}, 153--164.
+
+Montero, P and Vilar, J.A. (2014) \emph{TSclust: An R Package for Time Series Clustering.}  Journal of Statistical Software, 62(1), 1-43. \url{http://www.jstatsoft.org/v62/i01/.}
+
 }
 
 \author{

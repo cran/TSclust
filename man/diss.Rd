@@ -60,6 +60,10 @@ additional arguments and details. Note that series given by numeric matrices are
 Some methods produce additional output, see their respective documentation pages for more information.
 }
 
+\references{
+Montero, P and Vilar, J.A. (2014) \emph{TSclust: An R Package for Time Series Clustering.}  Journal of Statistical Software, 62(1), 1-43. \url{http://www.jstatsoft.org/v62/i01/.}
+}
+
 \author{
 Pablo Montero Manso, José Antonio Vilar. 
 %%  ~~who you are~~

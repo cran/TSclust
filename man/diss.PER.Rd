@@ -41,6 +41,9 @@ The computed distance.
 }
 \references{
 Caiado, J., Crato, N. and Peña, D. (2006) A periodogram-based metric for time series classification. \emph{Comput. Statist. Data Anal.}, \bold{50(10)}, 2668--2684.
+
+Montero, P and Vilar, J.A. (2014) \emph{TSclust: An R Package for Time Series Clustering.}  Journal of Statistical Software, 62(1), 1-43. \url{http://www.jstatsoft.org/v62/i01/.}
+
 }
 \author{
 Pablo Montero Manso, José Antonio Vilar.

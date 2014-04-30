@@ -25,6 +25,9 @@ M6 \tab STAR \tab  \eqn{ X_t = 0.8 X_{t-1} -0.8 X_{t-1} \left( 1 + \exp \left( -
 	Three simulations of each model are included. This dataset can be used for comparing the performance of different dissimilarity measures between time series  or clustering algorithms.
 }
 
+\references{
+Montero, P and Vilar, J.A. (2014) \emph{TSclust: An R Package for Time Series Clustering.}  Journal of Statistical Software, 62(1), 1-43. \url{http://www.jstatsoft.org/v62/i01/.}
+}
 
 \examples{
 data(synthetic.tseries)

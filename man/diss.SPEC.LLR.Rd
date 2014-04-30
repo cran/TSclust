@@ -62,6 +62,8 @@ Vilar, J.A. and Pértega, S. (2004) Discriminant and cluster analysis for gaussi
   
 Kakizawa, Y.,  Shumway, R. H. and Taniguchi M. (1998) Discrimination and clustering for multivariate time series. \emph{J. Amer. Statist. Assoc.}, \bold{93(441)}, 328--
 340.
+
+Montero, P and Vilar, J.A. (2014) \emph{TSclust: An R Package for Time Series Clustering.}  Journal of Statistical Software, 62(1), 1-43. \url{http://www.jstatsoft.org/v62/i01/.}
 }
 \author{
 Pablo Montero Manso, José Antonio Vilar.

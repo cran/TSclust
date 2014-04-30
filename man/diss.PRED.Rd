@@ -81,6 +81,9 @@ When used from the \code{diss} wrapper function, it returns a list with the foll
 Alonso, A.M., Berrendero, J.R., Hernandez, A. and Justel, A. (2006) Time series clustering based on forecast densities. \emph{Comput. Statist. Data Anal.}, \bold{51},762--776.\cr
 
 Vilar, J.A.,  Alonso, A. M. and Vilar, J.M. (2010) Non-linear time series clustering based on non-parametric forecast densities. \emph{Comput. Statist. Data Anal.}, \bold{54 (11)}, 2850--2865.
+
+Montero, P and Vilar, J.A. (2014) \emph{TSclust: An R Package for Time Series Clustering.}  Journal of Statistical Software, 62(1), 1-43. \url{http://www.jstatsoft.org/v62/i01/.}
+
 }
 \author{
 José Antonio Vilar, Pablo Montero Manso. 

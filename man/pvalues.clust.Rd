@@ -40,6 +40,8 @@ model. The clustering algorithm will only group together those series whose asso
 \references{
 Maharaj E.A. (2000) Clusters of time series. \emph{J. Classification}, \bold{17(2)}, 297--314.
 
+Montero, P and Vilar, J.A. (2014) \emph{TSclust: An R Package for Time Series Clustering.}  Journal of Statistical Software, 62(1), 1-43. \url{http://www.jstatsoft.org/v62/i01/.}
+
 }
 \author{
 Pablo Montero Manso, José Antonio Vilar. 

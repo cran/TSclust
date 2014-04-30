@@ -43,6 +43,9 @@ Larsen, B. and Aone, C. (1999) Fast and effective text mining using linear-time 
 Kalpakis, K., Gada D. and Puttagunta, V. (2001) Distance measures for effective clustering of arima time-series. \emph{Proceedings 2001 IEEE International Conference on Data Mining}, 273--280. \cr
 
 Pértega S. and Vilar, J.A (2010) Comparing several parametric and nonparametric approaches to time series clustering: A simulation study. \emph{J. Classification}, \bold{27(3)}, 333-362.
+
+Montero, P and Vilar, J.A. (2014) \emph{TSclust: An R Package for Time Series Clustering.}  Journal of Statistical Software, 62(1), 1-43. \url{http://www.jstatsoft.org/v62/i01/.}
+
 }
 \author{
 Pablo Montero Manso, José Antonio Vilar.
