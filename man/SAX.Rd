@@ -18,7 +18,7 @@ diss.MINDIST.SAX(x, y, w, alpha=4, plot=FALSE)
 PAA(x, w)
 convert.to.SAX.symbol(x, alpha)
 MINDIST.SAX(x, y, alpha, n)
-SAX.plot(series, w, alpha, col.ser=rainbow(ncol(series)))
+SAX.plot(series, w, alpha, col.ser=rainbow(ncol(as.matrix(series))))
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

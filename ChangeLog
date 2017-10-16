@@ -1,3 +1,15 @@
+1.2.4
+        * Fixed ACF and PACF returning squared euclidean distance instead of the proper euclidean distance
+ 
+        * Fixed CID distance when denominator is 0
+
+        * Fixed SAX.plot not working with vectors
+
+	* Reworked diss.AR.LPC.CEPS
+
+	* Fixed diss.SPEC.GLK returning 0	
+
+	* Fixed import errors
 1.2.3
 	* Changed title to title case
 

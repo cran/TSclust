@@ -145,7 +145,7 @@ diss.MINDIST.SAX <- function(x, y, w, alpha=4, plot=FALSE) {
 }
 
 
-SAX.plot <- function(series, w, alpha, col.ser = rainbow(ncol(series))) {
+SAX.plot <- function(series, w, alpha, col.ser = rainbow(ncol(as.matrix(series)))) {
     x <- series
     stopifnot(is.ts(x) || is.mts(x))
     n = length(x)

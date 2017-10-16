@@ -1,54 +1,61 @@
 
-################################################################################
-#######################  AUTOCORRELATION AND PARTIAL ###########################
-################################################################################
+
+#######################################################################################
+#################################  AUXILIARY FUNCTIONS ################################
+#######################################################################################
+
 
 z.normalize = function(x) {
-    (x - mean(x)) / sd(x)
+  (x - mean(x)) / sd(x)
 }
 
 range.normalize = function(x) {
-    minim <- min(x)
-    maxim <- max(x)
-    (x -minim) / (maxim - minim)    
+  minim <- min(x)
+  maxim <- max(x)
+  (x -minim) / (maxim - minim)    
 }
 
 .common.ts.sanity.check <- function(x) {
-    if (missing(x)) {
-        stop("At least one series is missing!")
-    }
-    if (any(is.na(x))) {
-        stop("NA in the series")
-    }
-    if (!is.numeric(x)) {
-        stop("Series must be numeric")
-    }
-    #check length
-    if (length(x) < 2) {
-        stop("Incorrect length of the series")
-    }
-    if (!is.null(dim(x))) {
-        stop("Incorrect dimension of the series, please input univarate series")
-    }
+  if (missing(x)) {
+    stop("At least one series is missing!")
+  }
+  if (any(is.na(x))) {
+    stop("NA in the series")
+  }
+  if (!is.numeric(x)) {
+    stop("Series must be numeric")
+  }
+  #check length
+  if (length(x) < 2) {
+    stop("Incorrect length of the series")
+  }
+  if (!is.null(dim(x))) {
+    stop("Incorrect dimension of the series, please input univarate series")
+  }
 }
 .ts.freq.check <- function(x, y) {
-    if (is.ts(x) && is.ts(y)) { #check their frequencies
-        cbind(x,y)
-    }
+  if (is.ts(x) && is.ts(y)) { #check their frequencies
+    cbind(x,y)
+  }
 }
 .ts.sanity.check <- function(x,y) {
-    .common.ts.sanity.check(x)
-    .common.ts.sanity.check(y)  
-    .ts.freq.check(x,y)
+  .common.ts.sanity.check(x)
+  .common.ts.sanity.check(y)  
+  .ts.freq.check(x,y)
 }
 
 #check if series have equal length, a requisite of some functions
 .check.equal.length.ts <- function(x,y) {
-    if (length(x) != length(y)) {
-        stop("Time series must have the same length")
-    }	
-    
+  if (length(x) != length(y)) {
+    stop("Time series must have the same length")
+  }  
+  
 }
+
+################################################################################
+#######################  AUTOCORRELATION AND PARTIAL ###########################
+################################################################################
+
 
 #weighted distance of acf and pacf coefficients
 .internal.autocorr.dist <- function(rhox, rhoy, p=NULL, omega=NULL) {
@@ -63,7 +70,7 @@ range.normalize = function(x) {
             omega <- diag(length(rhox))
         }
     }
-    t(rhox - rhoy) %*% omega %*% (rhox - rhoy) #weighted euclidean distance
+    sqrt(t(rhox - rhoy) %*% omega %*% (rhox - rhoy)) #weighted euclidean distance
 }
 
 
@@ -439,9 +446,16 @@ integrate.GLK <- function( base, x, y) {
 multidiss.interp.SPEC <- function( series, n, interpfun, integrationfun, ...) {
     l <- length(series)
     dists <- matrix(0, l, l)
+    
+    if ( sum(diff(unlist(lapply(series, function(x) length(x))))) != 0 ) {
+      stop("SPECtral dissimilarity requires equal length time series")
+    }
+    
     #get the interpolated values
     interps <- lapply(series, interpfun, n)
-    base <- interps[[1]]$x
+    minbase <- unlist(lapply(interps, function(x) {min(x$x)}))
+    maxbase <- unlist(lapply(interps, function(x) {max(x$x)}))
+    base <- seq( max(minbase), min(maxbase), length.out=n)
     ##calc the function with the interpolated values
     for (i in 1:(l-1)) {
         for (j in (i+1):l) {
@@ -472,18 +486,18 @@ distance.W.LK <- function(x,y, alpha, plot=FALSE, n=length(x)) {
         yy <- exp(.vectorized.lk.optim(lambda, YksY, lambdasY, hY))
         simetricDivergenceW(  xx / yy, alpha)
     }
-    
+    lambdas <- c(max(min(c(lambdasX, lambdasY))), min(max(c(lambdasX, lambdasY))))
     a <- 0
     if (n > 0) {
         a <- multidiss.interp.SPEC(list(x,y), n, interp.W.LK, integrate.divergenceW, alpha)
     } else {
         tryCatch( {
-            a <- integrate(integrateaux, min(lambdasX), max(lambdasX))$value
+            a <- integrate(integrateaux, min(lambdas), max(lambdas))$value
         }, error = function (e) {
             warning("Failed approximation with window from plug.in method, increasing window...")
             hX <- 2*hX
             hY <- 2*hY
-            a <- integrate(integrateaux, min(lambdasX), max(lambdasX))$value
+            a <- integrate(integrateaux, min(lambdas), max(lambdas))$value
         })
     }
     if (plot) {
@@ -493,7 +507,8 @@ distance.W.LK <- function(x,y, alpha, plot=FALSE, n=length(x)) {
 }
 
 distance.W.DLS <- function(x, y, alpha, plot=FALSE, n=length(x)) {
-     
+    .ts.sanity.check(x, y)
+    .check.equal.length.ts(x,y) 
     YksX <- (spec.pgram(x,plot=FALSE)$spec)
     lambdasX <- spec.pgram(x,plot=FALSE)$freq
     YksY <- (spec.pgram(y,plot=FALSE)$spec)
@@ -508,8 +523,7 @@ distance.W.DLS <- function(x, y, alpha, plot=FALSE, n=length(x)) {
         yy[yy<0.0001] <- 0.0001
         simetricDivergenceW(  xx / yy, alpha)
     }
-    lambdas <- spec.pgram(x, plot=F)$freq
-    
+    lambdas <- c(max(min(c(lambdasX, lambdasY))), min(max(c(lambdasX, lambdasY))))
     a <- 0
     if (n > 0) {
         a <- multidiss.interp.SPEC(list(x,y), n, interp.SPEC.LS, integrate.divergenceW, alpha)
@@ -573,8 +587,8 @@ diss.SPEC.GLK <- function(x,y, plot=FALSE ) {
     .ts.sanity.check(x, y)
     .check.equal.length.ts(x,y)
         
-    interpx <- interp.SPEC.GLK(x, length(x)/2) #the value n is ignored noly used for compatibility with
-    interpy <- interp.SPEC.GLK(x, length(x)/2) #multidiss.SPEC
+    interpx <- interp.SPEC.GLK(x, length(x)/2) #the value n is ignored only used for compatibility with
+    interpy <- interp.SPEC.GLK(y, length(y)/2) #multidiss.SPEC
     
     if (plot) {
         YksX <- log(spec.pgram(x,plot=FALSE)$spec)
@@ -631,47 +645,90 @@ diss.SPEC.ISD <- function(x,y, plot=FALSE, n=length(x)) {
 ##############  distance CEPSTRAL  ######################
 #########################################################
 
+#combines non seasonal and seasonal autregressive coefficients in a single non-seasonal coef vector
+#coef+period to plain coef, and the mutliplication of nonseasonal and seasonal parts
+.seasontoplain = function(ar,sar,period) {
+  #initialization to common length vectors
+  maxlen = max(length(ar), length(sar)*period)
+  arcoef = rep.int(0, maxlen)
+  sarcoef = rep.int(0, maxlen)
+  
+  arcoef[1:length(ar)] = ar
+  #transform coefficients + period to plain vector
+  sarcoef[(0:length(sar)*period)] = sar
+  
+  #multiply the coefficients (sort of polynomial multiplication)
+  endcoef = rep(0,2*maxlen)
+  for (i in 1:maxlen) {
+    for (j in 1:maxlen) {
+      endcoef[i + j] = endcoef[i + j] - arcoef[i]*sarcoef[j]
+    }
+  }
+  endcoef[1:length(arcoef)] = endcoef[1:length(arcoef)] + arcoef
+  endcoef[1:length(sarcoef)] = endcoef[1:length(sarcoef)] + sarcoef
+  endcoef
+}
+
+.arma2ar <- function(ar, ma, lag) {
+  coef<- ARMAacf(ar, ma, lag)
+  acf2AR(coef)[lag,]
+}
 
 .calc.cepstral.coef <- function( ARx, h ) {
-    CEPSTRALx <- 1:h
-    CEPSTRALx[1] <- -ARx[1]
-    if (length(ARx) >= 2) {
-        for (i in 2:length(ARx)) {
-            acum <- 0
-            for (m in 1:(i-1) ) {
-                acum <- acum + ( 1- m/i)*ARx[m]*CEPSTRALx[i-m]
-            }
-            CEPSTRALx[i] <- -ARx[i] + -acum
-        }
+  CEPSTRALx <- 1:h
+  CEPSTRALx[1] <- ARx[1]   
+  if (length(ARx) >= 2) {
+    for (i in 2:length(ARx)) {
+      acum <- 0
+      for (m in 1:(i-1) ) {
+        acum <- acum + ( 1- m/i)*ARx[m]*CEPSTRALx[i-m]
+      }
+      CEPSTRALx[i] <- ARx[i] + acum   
     }
-    
-    if (h > length(ARx)) {
-        for (i in (length(ARx)+1):h) {
-            acum <- 0
-            for (m in 1:length(ARx)) {
-                acum <- acum + (1 - m/i)*ARx[m]*CEPSTRALx[i-m]
-            }
-            CEPSTRALx[i] <- -acum
-        }
+  }
+  
+  
+  if (h > length(ARx)) {
+    for (i in (length(ARx)+1):h) {
+      acum <- 0
+      for (m in 1:length(ARx)) {
+        acum <- acum + (1 - m/i)*ARx[m]*CEPSTRALx[i-m]
+      }
+      CEPSTRALx[i] <- acum        
     }
-    CEPSTRALx
-    
+  }
+  CEPSTRALx
 }
 
 
 cepstral <- function(x, h, order=NULL, seasonal, permissive) {
     ARx <- NULL
     
-    SAR <- NULL
+    SAR <- 0
+    period <- 0
     if (is.null(order)) { #if order null, fit automatically
         ARx <- ar(x,order.max=min(length(x)-1,h))
     } else {
         if ((order[1]) < 1) stop("The arima order must have AR coefficients, they are used for the distance")
-        arim <- arima(x, order, seasonal)
-        ARx$ar <- arim$coef[1:order[1]]
-        if (seasonal[[1]][1]>0) { #the seasonal part as in kalpakis
-            SAR <- arim$coef[ (1 + order[1] + order[2]):(1 + order[1] + order[2]+ seasonal[[1]][1]) ]
-        }
+        arim <- arima(x, order, seasonal) #calc the ARIMA coefs from the imposed model
+        #convert ARMA to AR
+        arcoef = arim$coef[1:arim$arma[1]][0:arim$arma[1]]  #get the coefs
+        macoef = arim$coef[(1+arim$arma[1]):(1+arim$arma[1]+arim$arma[2] -1)][0:arim$arma[2]]
+        ARx$ar <- .arma2ar(ar=arcoef, ma = macoef, 50) #convert
+
+        #the seasonal part ARMA to AR
+        Scoef <- arim$coef[ (1 + arim$arma[1] + arim$arma[2]):(1 + arim$arma[1] + arim$arma[2]+ arim$arma[3] + arim$arma[4]) ]
+        SAR <- Scoef[0:arim$arma[3]]
+        SMA <- Scoef[ - (0:arim$arma[3])]
+	if (length(SAR) == 0) {
+	  SAR = 0
+	}
+	if (length(SMA) == 0) {
+	  SMA = 0
+	}
+
+        SAR <- .arma2ar(ar=SAR, ma = SMA, 50)
+        period <- arim$arma[5]
     }
     
     if (length(ARx$ar) < 1) {
@@ -684,15 +741,9 @@ cepstral <- function(x, h, order=NULL, seasonal, permissive) {
         }
     }
     
-    cepst.SAR <- NULL #compute the sesonal part
-    if (is.null(SAR)) {
-        cepst.SAR <- rep.int(0, h)
-    }
-    else {
-        cepst.SAR <- .calc.cepstral.coef(SAR, h)
-    }
+    coef <- .seasontoplain(ARx$ar, SAR, period)
     
-    rbind( .calc.cepstral.coef(ARx$ar, h), cepst.SAR )
+    .calc.cepstral.coef(coef, h)
     
 }
 
@@ -707,7 +758,7 @@ diss.AR.LPC.CEPS <- function(x, y, k=50, order.x=NULL, order.y= NULL,
     }
     cpx <- cepstral(x, k, order.x, seasonal.x, permissive)
     cpy <- cepstral(y, k, order.y, seasonal.y, permissive)
-    as.numeric(dist(rbind(cpx[1,],cpy[1,])) + dist(rbind(cpx[2,],cpy[2,])))
+    as.numeric(dist(rbind(cpx,cpy)))
 }
 
 
@@ -1001,7 +1052,7 @@ diss.COR <- function(x, y, beta = NULL) {
 
 #common part of compression methods,
 #calculate the sizes of the compressed series and of their concatenation
-.compression.lengths <- function(x, y, type) {       
+.compression.lengths <- function(x, y, type) {      
     methods <- type
     type = match.arg(type, c("gzip", "bzip2", "xz", "min"))
     if (type == "min") { #choose the best compression method of the three 
@@ -1043,9 +1094,13 @@ diss.NCD <- function(x,y, type="min") {
 diss.CID = function(x, y) {
     .ts.sanity.check(x, y)
     .check.equal.length.ts(x,y)
-    CED.x = sqrt( sum( diff(x)^2) ) #complexities of the series
-    CED.y = sqrt( sum( diff(y)^2) )
-    CF = max(CED.x, CED.y) / min(CED.x, CED.y) #complexity correction factor
+    CED.x <- sqrt( sum( diff(x)^2) ) #complexities of the series
+    CED.y <- sqrt( sum( diff(y)^2) )
+    denom <- min(CED.x, CED.y)
+    if(denom == 0) {
+      stop("Cannot divide by zero: A series exists that has complexity zero.")
+    }
+    CF = max(CED.x, CED.y) / denom #complexity correction factor
     CF * dist(rbind(x,y))
 }
 
@@ -1091,7 +1146,7 @@ cluster.evaluation <- function(G,S) {
 #series is a list with time series
 #dissfun is a function that takes the list of series and their indices, and extra paramters
 #... parameters for dissfun
-pairwise.diss <- function(series, dissfun, ...) {    
+pairwise.diss <- function(series, dissfun, ...) {   
     n <- length(series)
     distances <- matrix(0, n, n)
     for (i in 1:(n-1)) {
@@ -1114,7 +1169,10 @@ noindicesdiss <- function( fun ) {
     }
 }
 
+
+
 diss <- function(SERIES, METHOD, ...) {
+  pair.diss.fun = pairwise.diss
     if (!is.matrix(SERIES) && !is.list(SERIES) && !is.mts(SERIES)) {
         stop("list, mts, matrix or data.frame object is required for SERIES ")
     }
@@ -1146,7 +1204,7 @@ diss <- function(SERIES, METHOD, ...) {
         mat.ser <- matrix(0, n, k)
         for (i in 1:n) {
             if ( length( series[[i]]) != k ) {
-                stop("diss method requires same length series")
+                stop(paste("diss method",METHOD,"requires same length series"))
             }
             mat.ser[i,] <- series[[i]]
         }
@@ -1201,7 +1259,7 @@ diss <- function(SERIES, METHOD, ...) {
             }
              diss.AR.PIC(SERIES[[i]], SERIES[[j]], order[i,], order[j,], permissive)
         }
-        out.dist <- pairwise.diss(SERIES, multi.PIC, ...)
+        out.dist <- pair.diss.fun(SERIES, multi.PIC, ...)
     } else if (diss.method == "AR.LPC.CEPS") {
         multi.CEPS <- function(series, i, j, k=50, order=NULL, seasonal=NULL, permissive=TRUE,
                         order.x=NULL, order.y=NULL, seasonal.x=NULL, seasonal.y=NULL) { #arguments to inform incorrect usage
@@ -1215,13 +1273,13 @@ diss <- function(SERIES, METHOD, ...) {
             }
             distance <- diss.AR.LPC.CEPS(series[[i]], series[[j]], k, order[i,], order[j,], seasonal[[i]], seasonal[[j]] )
         }
-        out.dist <- pairwise.diss(SERIES, multi.CEPS, ...)
+        out.dist <- pair.diss.fun(SERIES, multi.CEPS, ...)
     } else if (diss.method == "PRED") {
         return( multidiss.PRED(SERIES, ...) ) #TODO proper names
     } else if (diss.method == "AR.MAH") {
 
-        statistic = pairwise.diss( SERIES, noindicesdiss(diss.AR.MAH.STAT), ...)
-        p_value = pairwise.diss( SERIES, noindicesdiss(diss.AR.MAH.PVAL), ...)
+        statistic = pair.diss.fun( SERIES, noindicesdiss(diss.AR.MAH.STAT), ...)
+        p_value = pair.diss.fun( SERIES, noindicesdiss(diss.AR.MAH.PVAL), ...)
         return( list(statistic=statistic, p_value=p_value) ) #TODO proper naming of the output
     } else if (diss.method == "PDC") {
         out.dist <- pdcDist( t( list.to.matrix(SERIES) ), ...)
@@ -1232,7 +1290,7 @@ diss <- function(SERIES, METHOD, ...) {
     } else if (diss.method == "SPEC.ISD") { #for performance reasons, we must call these in a different way
         out.dist <- multidiss.SPEC.ISD(SERIES, ...)
     } else {
-        out.dist <- pairwise.diss( SERIES, noindicesdiss(diss.fun), ...)
+        out.dist <- pair.diss.fun( SERIES, noindicesdiss(diss.fun), ...)
     }
     out.dist <- as.dist(out.dist)
     names(out.dist) <- names(SERIES)

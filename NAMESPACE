@@ -1,3 +1,14 @@
+importFrom("grDevices", "rainbow")
+importFrom("graphics", "abline", "layout", "legend", "lines", "par",
+             "plot", "plot.default", "points")
+importFrom("stats", "acf", "approx", "ar", "ar.ols", "arima",
+             "as.dist", "cor", "cov", "density", "diffinv", "dist",
+             "dnorm", "hclust", "integrate", "is.mts", "is.ts", "optim",
+             "pacf", "pchisq", "qnorm", "rnorm", "sd", "spec.pgram",
+             "var", "ARMAacf", "acf2AR")
+
+
+importFrom("utils", "combn")
 import(dtw)
 import(locpol)
 import(KernSmooth)
