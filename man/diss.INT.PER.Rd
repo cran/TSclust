@@ -67,11 +67,8 @@ z <- sin(seq(0, pi, length.out=100))
 diss.INT.PER(x, y, normalize=TRUE)
 diss.INT.PER(x, y, normalize=TRUE)
 diss.INT.PER(x, y, normalize=TRUE)
-\dontrun{
+\donttest{
 diss( rbind(x,y,z), "INT.PER", normalize=FALSE )
 }
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+

@@ -82,11 +82,8 @@ diss.CORT(x, y, 2)
 diss.CORT(x, z, 2)
 diss.CORT(y, z, 2)
 #create a dist object for its use with clustering functions like pam or hclust
-\dontrun{
+\donttest{
 diss( rbind(x,y,z), "CORT", k=3, deltamethod="DTW")
 }
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+

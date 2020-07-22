@@ -69,11 +69,8 @@ z <- sin(seq(0, pi, length.out=50))
 ## Compute the distance and check for coherent results
 diss.SPEC.GLK(x, y, plot=TRUE)
 #create a dist object for its use with clustering functions like pam or hclust
-\dontrun{
+\donttest{
 diss( rbind(x,y,z), "SPEC.GLK" )
 }
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+

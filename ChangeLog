@@ -1,3 +1,5 @@
+1.3.1   * Adding a temporary fix to the wavelet function not supported
+1.3     * Adding functionalities from the forecast package to the diss.PRED functio
 1.2.4
         * Fixed ACF and PACF returning squared euclidean distance instead of the proper euclidean distance
  

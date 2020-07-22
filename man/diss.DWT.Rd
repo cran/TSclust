@@ -35,9 +35,7 @@ Returns an object of type \code{dist} with the pairwise distances.
 %%  \item{comp2 }{Description of 'comp2'}
 %% ...
 }
-\seealso{
-\code{\link[wmtsa]{wavDWT}}
-}
+
 \references{
 Zhang, H., Ho, T. B., Zhang, Y., and Lin, M. (2006) Unsupervised feature extraction for time series clustering using orthogonal wavelet transform. \emph{INFORMATICA-LJUBLJANA-}, \bold{30(3)}, 305.
 
@@ -60,7 +58,4 @@ z <- sin(seq(0, pi, length.out=100))
 #compute the distance
 diss.DWT(rbind(x, y, z))
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+

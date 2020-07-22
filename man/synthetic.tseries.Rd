@@ -44,7 +44,7 @@ cluster.evaluation( true_cluster, intperclust)
 acfdist <- diss( synthetic.tseries, "ACF", p=0.05) 
 acfcluster <- pam( acfdist, 6 )$clustering #use pam clustering to form 6 clusters
 cluster.evaluation( true_cluster, acfcluster)
-\dontrun{
+\donttest{
 #test another dissimilarity metric and a cluster algorithm
 chernoffdist <- diss( synthetic.tseries, "SPEC.LLR")
 chernoffclust <- pam( chernoffdist, 6 )$clustering 

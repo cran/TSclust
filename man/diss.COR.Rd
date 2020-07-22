@@ -68,11 +68,8 @@ z <- sin(seq(0, pi, length.out=100))
 diss.COR(x, y)
 diss.COR(x, z)
 #create a dist object for its use with clustering functions like pam or hclust
-\dontrun{
+\donttest{
 diss( rbind(x,y,z), "COR")
 }
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+

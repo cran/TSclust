@@ -5,7 +5,7 @@ importFrom("stats", "acf", "approx", "ar", "ar.ols", "arima",
              "as.dist", "cor", "cov", "density", "diffinv", "dist",
              "dnorm", "hclust", "integrate", "is.mts", "is.ts", "optim",
              "pacf", "pchisq", "qnorm", "rnorm", "sd", "spec.pgram",
-             "var", "ARMAacf", "acf2AR")
+             "var", "ARMAacf", "acf2AR", "simulate")
 
 
 importFrom("utils", "combn")
@@ -13,9 +13,9 @@ import(dtw)
 import(locpol)
 import(KernSmooth)
 import(longitudinalData)
-import(wmtsa)
 import(pdc)
 import(cluster)
+import(forecast)
 
 
 export(diss.ACF, diss.PACF,  diss.AR.PIC, diss.AR.MAH, diss.PER, diss.INT.PER, diss.SPEC.LLR, diss.SPEC.GLK, diss.SPEC.ISD, diss.AR.LPC.CEPS, diss.CORT, diss.PRED, pvalues.clust, diss.DWT, diss.COR, cluster.evaluation, diss, diss.MINDIST.SAX, PAA, convert.to.SAX.symbol, MINDIST.SAX, SAX.plot, diss.CDM, diss.CID, diss.NCD, loo1nn.cv, diss.EUCL, diss.DTWARP, diss.FRECHET, diss.PDC)

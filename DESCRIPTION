@@ -1,17 +1,21 @@
 Package: TSclust
 Type: Package
 Title: Time Series Clustering Utilities
-Version: 1.2.4
-Date: 2017-10-15
+Version: 1.3.1
+Date: 2020-7-16
 Encoding: UTF-8
-Author: Pablo Montero Manso, José Antonio Vilar
-Maintainer: Pablo Montero <pmontm@gmail.com>
+Authors@R: c(person("Pablo", "Montero Manso", role= c("cre"), email="pmontm@gmail.com"),
+             person("Jose", "Vilar Fernandez", role="aut"))
 Description: A set of measures of dissimilarity between time series to perform time series clustering. Metrics based on raw data, on generating models and on the forecast behavior are implemented. Some additional utilities related to time series clustering are also provided, such as clustering algorithms and cluster evaluation metrics.
 License: GPL-2
 URL: http://www.jstatsoft.org/v62/i01/
-Depends: R (>= 3.0.1), wmtsa, pdc, cluster
-Imports: locpol, KernSmooth, dtw, longitudinalData
+Depends: R (>= 3.0.2), pdc, cluster
+Imports: locpol, KernSmooth, dtw, longitudinalData, forecast
+RoxygenNote: 6.0.1.9000
 NeedsCompilation: no
-Packaged: 2017-10-15 19:42:51 UTC; pmont
+Packaged: 2020-07-21 06:28:15 UTC; pmon0003
+Author: Pablo Montero Manso [cre],
+  Jose Vilar Fernandez [aut]
+Maintainer: Pablo Montero Manso <pmontm@gmail.com>
 Repository: CRAN
-Date/Publication: 2017-10-16 23:13:27 UTC
+Date/Publication: 2020-07-22 21:10:21 UTC

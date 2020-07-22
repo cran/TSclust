@@ -136,7 +136,4 @@ diss(rbind(x,y,z), "MINDIST.SAX", w, alpha)
 SAX.plot( as.ts(cbind(x,y,z)), w=w, alpha=alpha)
 
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+

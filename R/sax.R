@@ -96,6 +96,7 @@ diss.MINDIST.SAX <- function(x, y, w, alpha=4, plot=FALSE) {
     
     if (plot) {
         def.par <- par(no.readonly = TRUE) # save default, for resetting...
+        on.exit(par(def.par))
         layout( matrix(c(1,2), nrow=1 ) ,c(1,5) )
         
         mai <- par("mai") #change margins to get plots together

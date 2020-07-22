@@ -17,6 +17,5 @@ Montero, P and Vilar, J.A. (2014) \emph{TSclust: An R Package for Time Series Cl
 }
 \details{
 The dataset consists of hourly electricity prices in the Spanish market
-during weekdays of the period December 31, 2007 - May 25, 2009. Available at \url{http://www.omel.es}.
-
+during weekdays of the period December 31, 2007 - May 25, 2009.
 }

@@ -1,136 +1,157 @@
-########################################## 
+##########################################
 # AUXILIAR FUNCTIONS AND PACKAGES REQUIRED
-########################################## 
+##########################################
 
 # KernSmooth package.
 #source("distpred_aux2.R")# AUXILIARES1 file.
 #source("distpred_aux.R")# AUXILIARES file.
 #require(KernSmooth)
-################################ 
+################################
 # INPUT PARAMETERS
-################################ 
+################################
 
 # load series dataset as a list (thus permitting to deal with series of different length)
 
 
-diss.PRED = function( x, y, h, B=500, logarithm.x=FALSE, logarithm.y=FALSE, differences.x=0, differences.y=0, plot=FALSE) {
+diss.PRED = function( x, y, h, B=500, logarithm.x=FALSE, logarithm.y=FALSE,
+                      differences.x=0, differences.y=0, plot=FALSE,
+                      models = NULL) {
     .ts.sanity.check(x, y)
     series <- list(x=x,y=y)
     logarithms = c(logarithm.x, logarithm.y)
     differences = c(differences.x, differences.y)
     # GENERAL INPUT PARAMETER VALUES
-    #B <- 1000  		# number of bootstrap resamples 
+    #B <- 1000  		# number of bootstrap resamples
     #k <- 5			# length of the forecast horizon
     # d <- 1			# autoregressive order
-    
-    
+
+
     # PARAMETERS REQUIRED TO GENERATE PREDICTIONS
-    number.x <- 401	  	# number of equispaced points where estimators will be computed 	
+    number.x <- 401	  	# number of equispaced points where estimators will be computed
     length.grid <- 400	# size of bands-grid to compute the cross validation selector
-    nw.band <- 2		# nw.band determines the kind of automatic bandwidth selector 
+    nw.band <- 2		# nw.band determines the kind of automatic bandwidth selector
     # considered to construct the nadaraya-watson estimator:
     # 1 when the cross-validation bandwidth selector is used
     # 2 when the plug-in bandwidth by Ruppert,Sheater and Wand is used
-    l <- 4			# neighborhood of X_i whose observations are left out to estimate 
-    # m(X_i) in the cross-validation algorithm. So: X_i is left out 
-    # when l=0, X_{i-1},X_i, X_{i+1} when l=1, X_{i-2},X_{i-1},X_i, 
+    l <- 4			# neighborhood of X_i whose observations are left out to estimate
+    # m(X_i) in the cross-validation algorithm. So: X_i is left out
+    # when l=0, X_{i-1},X_i, X_{i+1} when l=1, X_{i-2},X_{i-1},X_i,
     # X_{i+1}, X_{i+2} when l=2 and so on.
-    innov.sobrantes <- 100	# number of innovations generated to be burnt 
-    
-    # PARAMETERS REQUIRED TO CONSTRUCT THE BOOTSTRAP FORECAST DENSITIES 
-    type.bw.forecast.dens <- "SJ-dpi" 
-    # bandwidth selector to estimate the bootstrap forecast densities. 
-    # Possible choice belongs to the set ("nrd0", "nrd", "ucv", "bcv", 
+    innov.sobrantes <- 100	# number of innovations generated to be burnt
+
+    # PARAMETERS REQUIRED TO CONSTRUCT THE BOOTSTRAP FORECAST DENSITIES
+    type.bw.forecast.dens <- "SJ-dpi"
+    # bandwidth selector to estimate the bootstrap forecast densities.
+    # Possible choice belongs to the set ("nrd0", "nrd", "ucv", "bcv",
     # "SJ-ste", "SJ-dpi")I (see "bw.nrd" and "density" functions in R.
-    
-    
+
+
     k <- h
-    
-    ####################################################################################### 
+
+    #######################################################################################
     # MAIN PROGRAM
-    ####################################################################################### 
-    
+    #######################################################################################
+
     N <- length(series)						# number of series
     nombres <- names(series) 					# names of series
-    
-    ########################################################################################
-    # 0. TRANSFORMATION ( logarithm and differences)
-    ########################################################################################
-    
-    orig.series = cbind(x,y) #store untransformed series
-    logarithms = 1 - logarithms #the transformation functions take 0 as do logarithm, counter-intuitive
-    trans.series = transf.TRAMO( cbind(x,y), logarithms, differences )
-    series = list( x= trans.series$T.Ser[,1], y= trans.series$T.Ser[,2] )
-    
-    
-    
-    
-    
-    #######################################################################################
-    # 1. COMPUTING BOOTSTRAP VECTORS OF PREDICTIONS OF LENGTH k
-    #######################################################################################
-    
-    # The bootstrap prediction paths will be stored in 
-    path.k.prediction <- array(0,dim=c(k,B,N))
-    dimnames(path.k.prediction)[[3]] <- nombres
-    
-    for ( punt in 1:N )
-    {
-        # Threshold to compute the nonparametric estimator 
-        CM <- 3*sd(series[[punt]])
-        # Nonparametric approach to generate bootstrap predictions: 
-        aux <- pred.AB.CB(series[[punt]], nw.band, length.grid, l, CM, B, innov.sobrantes, 2, k, 0, 1) #only conditional BOOTSTRAP				
-        # conditional bootstrap 
-        path.k.prediction[,,punt] <- aux$CB						
-        
-    }
-    
-    #######################################################################################
-    # 1.1  BACKTRANSFORM THE PREDICTIONS
-    #######################################################################################
-    
-    back.pred = backtransf.TRAMO( path.k.prediction, trans.series$M.L.Ser, logarithms, differences, trans.series$Medias.log.series )
-    path.k.prediction = back.pred
-    
-    
-    ##########################################################################################
-    # 2. COMPUTING BOOTSTRAP FORECAST DENSITIES
-    ##########################################################################################
-    
-    # Bootstrap predictions at horizon k 
-    k.prediction <- path.k.prediction[k,,]
-    
-    # The bandwidths to compute the bootstrap forecast densities are stored in: 
+
+    # The bandwidths to compute the bootstrap forecast densities are stored in:
     bw.k.prediction <- array(0,dim=c(N))
     dimnames(bw.k.prediction)[[1]] <- nombres
-    
-    # The bootstrap forecast densities are stored in: 
+
+    # The bootstrap forecast densities are stored in:
     density.k.prediction <- array(0,dim=c(512,2,N))
-    
-    for (ser in 1:N)
+
+
+    if (is.null(models)) {
+      ########################################################################################
+      # 0. TRANSFORMATION ( logarithm and differences)
+      ########################################################################################
+
+      orig.series = cbind(x,y) #store untransformed series
+      logarithms = 1 - logarithms #the transformation functions take 0 as do logarithm, counter-intuitive
+      trans.series = transf.TRAMO( cbind(x,y), logarithms, differences )
+      series = list( x= trans.series$T.Ser[,1], y= trans.series$T.Ser[,2] )
+
+
+
+
+
+      #######################################################################################
+      # 1. COMPUTING BOOTSTRAP VECTORS OF PREDICTIONS OF LENGTH k
+      #######################################################################################
+
+      # The bootstrap prediction paths will be stored in
+      path.k.prediction <- array(0,dim=c(k,B,N))
+      dimnames(path.k.prediction)[[3]] <- nombres
+
+      for ( punt in 1:N )
+      {
+        # Threshold to compute the nonparametric estimator
+        CM <- 3*sd(series[[punt]])
+        # Nonparametric approach to generate bootstrap predictions:
+        aux <- pred.AB.CB(series[[punt]], nw.band, length.grid, l, CM, B, innov.sobrantes, 2, k, 0, 1) #only conditional BOOTSTRAP
+        # conditional bootstrap
+        path.k.prediction[,,punt] <- aux$CB
+
+      }
+
+      #######################################################################################
+      # 1.1  BACKTRANSFORM THE PREDICTIONS
+      #######################################################################################
+
+      back.pred = backtransf.TRAMO( path.k.prediction, trans.series$M.L.Ser, logarithms, differences, trans.series$Medias.log.series )
+      path.k.prediction = back.pred
+
+
+      ##########################################################################################
+      # 2. COMPUTING BOOTSTRAP FORECAST DENSITIES
+      ##########################################################################################
+
+      # Bootstrap predictions at horizon k
+      k.prediction <- path.k.prediction[k,,]
+
+
+      for (ser in 1:N)
         for (met.boot in 1:1) # only autoregressive
         {
-            auxiliary <- density( k.prediction[,ser], bw=type.bw.forecast.dens) 
-            bw.k.prediction[ser] <- auxiliary$bw
-            density.k.prediction[,,ser] <- cbind(auxiliary$x,auxiliary$y)
-        } 
-    
+          auxiliary <- density( k.prediction[,ser], bw=type.bw.forecast.dens)
+          bw.k.prediction[ser] <- auxiliary$bw
+          density.k.prediction[,,ser] <- cbind(auxiliary$x,auxiliary$y)
+        }
+    } else { #a model name or object is given
+      for (ser in 1:N) {
+        model <- NULL
+        if (class(models[[ser]])=="character" && models[[ser]] == "ets") {
+          model <- forecast::ets(series[[ser]])
+        } else if (class(models[[ser]])=="character" && models[[ser]] == "arima") {
+          model <- forecast::auto.arima(series[[ser]], stepwise = FALSE, approximation = FALSE)
+        } else {
+          model <- models[[ser]]
+        }
+        stopifnot(!is.null(model))
+        preds <- replicate( n=B, simulate(model, nsim=k, bootstrap=TRUE) )[k,]
+        auxiliary <- density( preds, bw=type.bw.forecast.dens)
+        bw.k.prediction[ser] <- auxiliary$bw
+        density.k.prediction[,,ser] <- cbind(auxiliary$x,auxiliary$y)
+      }
+    }
     ##########################################################################################
     # 3. COMPUTING PAIRWISE DISTANCES MATRIX BASED ON PAIRS OF BOOTSTRAP FORECAST DENSITIES
     ##########################################################################################
-    
-    # The pairwise L1 distances are stored in: 
+
+    # The pairwise L1 distances are stored in:
     DL1 <- array(0,dim=c(N,N))
     dimnames(DL1)[[1]] <- nombres;  dimnames(DL1)[[2]] <- nombres
-    
-    
+
+
     for (ser1 in 1:(N-1))
         for (ser2 in (ser1+1):N)
             for (met.boot in 1:1)
             {
                 r <- range(density.k.prediction[,1,c(ser1,ser2)])
                 a <- r[1] - 0.025*(r[2]-r[1]) ; b <- r[2] + 0.025*(r[2]-r[1])
-                integrand_L1 <- function(u) 
+                integrand_L1 <- function(u)
                 {
                     abs( estimator.density( density.k.prediction[,,ser1], u, bw.k.prediction[ser1] ) - estimator.density( density.k.prediction[,,ser2], u, bw.k.prediction[ser2] ) )
                 }
@@ -143,15 +164,15 @@ diss.PRED = function( x, y, h, B=500, logarithm.x=FALSE, logarithm.y=FALSE, diff
                         DL1[ser1,ser2] <- integrate( integrand_L1, lower=a, upper=b, stop.on.error=FALSE)$value
                     })
             }
-    
+
     if (plot) {
-        
+
         plot.default( density.k.prediction[,,1], type="l", col="red", lwd=2, main=paste("Prediction Density distance \nFor horizon:", k), xlab="", ylab="Density",
                       xlim=c(min(density.k.prediction[,1,1], density.k.prediction[,1,2]), max(density.k.prediction[,1,1], density.k.prediction[,1,2])), ylim=c(0, max(density.k.prediction[,2,1], density.k.prediction[,2,2]) ) )
         lines( density.k.prediction[,,2], col="blue", lwd=2 )
         legend("topright", pch=16, col=c("red", "blue"), legend= c("x", "y") )
     }
-    
+
     list( L1dist = DL1[1,2], dens.x = density.k.prediction[,,1], dens.y = density.k.prediction[,,2] ,
           bx.x = bw.k.prediction[1], bw.y = bw.k.prediction[2])
 }
@@ -160,7 +181,7 @@ diss.PRED = function( x, y, h, B=500, logarithm.x=FALSE, logarithm.y=FALSE, diff
  L1dist <- function( density.x, density.y, bw.x, bw.y) {
  r <- range(density.x[,1], density.y[,1])
  a <- r[1] - 0.025*(r[2]-r[1]) ; b <- r[2] + 0.025*(r[2]-r[1])
- integrand_L1 <- function(u) 
+ integrand_L1 <- function(u)
  {
      abs( estimator.density( density.x, u, bw.x ) - estimator.density( density.y, u, bw.y ) )
  }
@@ -217,7 +238,7 @@ multidiss.PRED = function( series, h, B=500, logarithms=NULL, differences=NULL, 
 #             densities[[j]] <- distance$dens.y
 #         }
 #     }
-    
+
     if (plot) {
         colors <- rainbow(length(densities))
         linetypes <- rep(1:6, ceiling(length(densities)/6))
@@ -230,9 +251,9 @@ multidiss.PRED = function( series, h, B=500, logarithms=NULL, differences=NULL, 
         }
         legend("topright", col=colors, legend= rownames(distances) , lty=linetypes, lwd=2, ncol=2 )
     }
-    
-    
-    
+
+
+
     list( dist = as.dist((distances)), densities = densities )
 }
 

@@ -96,7 +96,4 @@ diss( seriests, METHOD="AR.LPC.CEPS", k=30, order= orders )
 diss( seriests, METHOD="MINDIST.SAX", w=10, alpha=4 )
 diss( seriests, METHOD="PDC" )
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+

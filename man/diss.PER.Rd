@@ -72,7 +72,3 @@ diss.PER(y, z, TRUE, TRUE)
 #create a dist object for its use with clustering functions like pam or hclust
 diss( rbind(x,y,z), "PER", logarithm=TRUE, normalize=TRUE)
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
