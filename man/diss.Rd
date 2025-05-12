@@ -45,7 +45,7 @@ Methods that have arguments that require one value per time series in \code{seri
 \item "INT.PER" Integrate Periodogram-based method. See \code{\link{diss.INT.PER}}.
 \item "NCD" Normalized Compression Distance. See \code{\link{diss.NCD}}.
 \item "PACF" Partial Autocorrelation-based method. See \code{\link{diss.PACF}}.
-\item "PDC" Permutation distribution divergence. Uses the \code{\link{pdc}} package. See \code{\link[pdc]{pdcDist}} for 
+\item "PDC" Permutation distribution divergence. Uses the \code{pdc} package. See \code{\link[pdc]{pdcDist}} for 
 additional arguments and details. Note that series given by numeric matrices are interpreted row-wise and not column-wise, opposite as in \code{\link[pdc]{pdcDist}}.
 \item "PER" Periodogram-based method. See \code{\link{diss.PER}}.
 \item "PRED" Prediction Density-based method. This method has two value-per-series agument, the logarithm and difference transform. See \code{\link{diss.PRED}}.
@@ -61,7 +61,7 @@ Some methods produce additional output, see their respective documentation pages
 }
 
 \references{
-Montero, P and Vilar, J.A. (2014) \emph{TSclust: An R Package for Time Series Clustering.}  Journal of Statistical Software, 62(1), 1-43. \url{http://www.jstatsoft.org/v62/i01/.}
+Montero, P and Vilar, J.A. (2014) \emph{TSclust: An R Package for Time Series Clustering.}  Journal of Statistical Software, 62(1), 1-43. \doi{doi:10.18637/jss.v062.i01}
 }
 
 \author{

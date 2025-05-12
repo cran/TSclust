@@ -28,7 +28,7 @@ diss.AR.PIC(x, y, order.x=NULL, order.y=NULL, permissive=TRUE)
 \item{permissive}{ Specifies whether to force an AR order of 1 if no order is found. Ignored if neither order.x or order.y are NULL}
 }
 \details{
-If \code{order.x} or {order.y} are \code{NULL}, their respective series will be fitted automatically using a AR model. If \code{permissive} is \code{TRUE} and no AR order is found automatically, an AR order of 1 will be imposed, if this case fails, then no order can be found and the function produces an error.
+If \code{order.x} or \code{order.y} are \code{NULL}, their respective series will be fitted automatically using a AR model. If \code{permissive} is \code{TRUE} and no AR order is found automatically, an AR order of 1 will be imposed, if this case fails, then no order can be found and the function produces an error.
 \code{order.x} and \code{order.y} contain the three components of the ARIMA model: the AR order, the degree of differencing and the MA order, specified as in the function \code{\link{arima}}.
 
 If using \code{diss} function with "AR.PIC" \code{method}, the argument \code{order} must be used instead of \code{order.x} and \code{order.y}. \code{orders} is a matrix with one row per ARIMA, specified as in \code{\link{arima}}. If \code{order} is \code{NULL}, automatic fitting imposing a AR model is performed.
@@ -43,7 +43,7 @@ The computed distance.
 Piccolo, D. (1990) A distance measure for classifying arima models. \emph{J. Time Series
 Anal.}, \bold{11(2)}, 153--164.
 
-Montero, P and Vilar, J.A. (2014) \emph{TSclust: An R Package for Time Series Clustering.}  Journal of Statistical Software, 62(1), 1-43. \url{http://www.jstatsoft.org/v62/i01/.}
+Montero, P and Vilar, J.A. (2014) \emph{TSclust: An R Package for Time Series Clustering.}  Journal of Statistical Software, 62(1), 1-43. \doi{doi:10.18637/jss.v062.i01}
 
 }
 

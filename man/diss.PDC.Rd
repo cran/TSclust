@@ -28,7 +28,7 @@ diss.PDC(x, y, ...)
 }
 
 \details{
- This is basically a wrapper for \code{pdcDist} of the \code{\link{pdc}} package, intended for an easier discovery of the functionalities used in TSclust.
+ This is basically a wrapper for \code{pdcDist} of the \code{\link[pdc]{pdc}} package, intended for an easier discovery of the functionalities used in TSclust.
 }
 
 \value{

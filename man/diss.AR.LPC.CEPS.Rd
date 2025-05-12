@@ -36,7 +36,7 @@ diss.AR.LPC.CEPS(x, y, k = 50, order.x=NULL, order.y=NULL,
 \item{permissive}{ Specifies whether to force an AR order of 1 if no order is found. Ignored if neither order.x or order.y are NULL}
 }
 \details{
-If \code{order.x} or {order.y} are \code{NULL}, their respective series will be fitted automatically using a AR model.
+If \code{order.x} or \code{order.y} are \code{NULL}, their respective series will be fitted automatically using a AR model.
 \code{order.x} and \code{order.y} contain the three components of the ARIMA model: the AR order, the degree of differencing and the MA order, specified as in the function \code{\link{arima}}.
 
 \code{seasonal.x} and \code{seasonal.y} are lists with two components: 'order' and 'period'. See \code{seasonal} parameter of \code{\link{arima}}, except that specification using a numeric \code{vector} of length 3 is not allowed.
@@ -56,7 +56,7 @@ The computed distance.
 \references{
 Kalpakis, K., Gada D. and Puttagunta, V. (2001) Distance measures for effective clustering of arima time-series. \emph{Proceedings 2001 IEEE International Conference on Data Mining}, 273--280. \cr
 
-Montero, P and Vilar, J.A. (2014) \emph{TSclust: An R Package for Time Series Clustering.}  Journal of Statistical Software, 62(1), 1-43. \url{http://www.jstatsoft.org/v62/i01/.}
+Montero, P and Vilar, J.A. (2014) \emph{TSclust: An R Package for Time Series Clustering.}  Journal of Statistical Software, 62(1), 1-43. \doi{doi:10.18637/jss.v062.i01}
 }
 \author{
 Pablo Montero Manso, José Antonio Vilar. 

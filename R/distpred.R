@@ -122,15 +122,15 @@ diss.PRED = function( x, y, h, B=500, logarithm.x=FALSE, logarithm.y=FALSE,
     } else { #a model name or object is given
       for (ser in 1:N) {
         model <- NULL
-        if (class(models[[ser]])=="character" && models[[ser]] == "ets") {
+        if (is(models[[ser]],"character") && models[[ser]] == "ets") {
           model <- forecast::ets(series[[ser]])
-        } else if (class(models[[ser]])=="character" && models[[ser]] == "arima") {
+        } else if (is(models[[ser]],"character") && models[[ser]] == "arima") {
           model <- forecast::auto.arima(series[[ser]], stepwise = FALSE, approximation = FALSE)
         } else {
           model <- models[[ser]]
         }
         stopifnot(!is.null(model))
-        preds <- replicate( n=B, simulate(model, nsim=k, bootstrap=TRUE) )[k,]
+        preds <- replicate( n=B, stats::simulate(model, nsim=k, bootstrap=TRUE) )[k,]
         auxiliary <- density( preds, bw=type.bw.forecast.dens)
         bw.k.prediction[ser] <- auxiliary$bw
         density.k.prediction[,,ser] <- cbind(auxiliary$x,auxiliary$y)

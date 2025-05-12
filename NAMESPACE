@@ -6,7 +6,7 @@ importFrom("stats", "acf", "approx", "ar", "ar.ols", "arima",
              "dnorm", "hclust", "integrate", "is.mts", "is.ts", "optim",
              "pacf", "pchisq", "qnorm", "rnorm", "sd", "spec.pgram",
              "var", "ARMAacf", "acf2AR", "simulate")
-
+importFrom("methods", "is")
 
 importFrom("utils", "combn")
 import(dtw)

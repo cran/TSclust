@@ -1,20 +1,20 @@
 citHeader("To cite TSclust in publications use:")
 
-citEntry(entry = "Article",
+bibentry(bibtype = "Article",
   title        = "{TSclust}: An {R} Package for Time Series Clustering",
-  author       = personList(as.person("Pablo Montero"),
+  author       = c(as.person("Pablo Montero"),
                    as.person("Jos{\\'e} A. Vilar")),
   journal      = "Journal of Statistical Software",
   year         = "2014",
   volume       = "62",
   number       = "1",
   pages        = "1--43",
-  url          = "http://www.jstatsoft.org/v62/i01/",
+  url          = "https://doi.org/10.18637/jss.v062.i01",
 
   textVersion  =
   paste("Pablo Montero, José A. Vilar (2014).",
         "TSclust: An R Package for Time Series Clustering.",
         "Journal of Statistical Software, 62(1), 1-43.",
-        "URL http://www.jstatsoft.org/v62/i01/.")
+        "https://doi.org/10.18637/jss.v062.i01")
 )
 

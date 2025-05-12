@@ -28,7 +28,7 @@ diss.DTWARP(x, y, ...)
 }
 
 \details{
- This is basically a wrapper for \code{dtw} of the \code{\link{pdc}} package, intended for an easier discovery of the functionalities used in TSclust.
+ This is basically a wrapper for \code{dtw} of the \code{\link[dtw]{dtw}} package, intended for an easier discovery of the functionalities used in TSclust.
 }
 
 \value{

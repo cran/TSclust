@@ -28,7 +28,7 @@ diss.FRECHET(x, y, ...)
 }
 
 \details{
- This is basically a wrapper for \code{distFrechet} of the \code{\link{longitudinalData}} package, intended for an easier discovery of the functionalities used in TSclust.
+ This is basically a wrapper for \code{distFrechet} of the \code{"\link[longitudinalData]{longitudinalData}"} package, intended for an easier discovery of the functionalities used in TSclust.
 }
 
 \value{

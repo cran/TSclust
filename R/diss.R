@@ -5,11 +5,11 @@
 #######################################################################################
 
 
-z.normalize = function(x) {
+.z.normalize = function(x) {
   (x - mean(x)) / sd(x)
 }
 
-range.normalize = function(x) {
+.range.normalize = function(x) {
   minim <- min(x)
   maxim <- max(x)
   (x -minim) / (maxim - minim)    
